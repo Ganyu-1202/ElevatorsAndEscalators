@@ -1,0 +1,11 @@
+{
+    "creative_tabs.elevators_escalators.tab_title": "Elevators and Escalators",
+    "block.elevators_escalators.example_block": "Example Block",
+    "item.elevators_escalators.example_item": "Example Item",
+    "item.elevators_escalators.mod_icon": "[Elevators & Escalators Icon]",
+    "block.elevators_escalators.elevator_door": "Elevator Door",
+    "item.elevators_escalators.elevator_door": "Elevator Door",
+    "block.elevators_escalators.outer_control_panel": "Outer Control Panel",
+    "block.elevators_escalators.inner_control_panel": "Inner Control Panel",
+    "block.elevators_escalators.main_controller": "Main Controller"
+}

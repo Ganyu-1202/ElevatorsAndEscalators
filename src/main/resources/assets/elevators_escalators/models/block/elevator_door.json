@@ -1,0 +1,7 @@
+{
+	"parent": "minecraft:block/door_bottom",
+	"textures": {
+		"bottom": "elevators_escalators:block/elevator_door_bottom",
+		"top": "elevators_escalators:block/elevator_door_top"
+	}
+}

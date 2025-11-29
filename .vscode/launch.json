@@ -1,0 +1,93 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "Client",
+      "presentation": {
+        "group": "Mod Development - ElevatorsAndEscalators",
+        "order": 0
+      },
+      "projectName": "ElevatorsAndEscalators",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\clientRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003delevators_escalators%%D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\run",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "Data",
+      "presentation": {
+        "group": "Mod Development - ElevatorsAndEscalators",
+        "order": 1
+      },
+      "projectName": "ElevatorsAndEscalators",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\dataRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\dataRunVmArgs.txt",
+        "-Dfml.modFolders\u003delevators_escalators%%D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\run",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "GameTestServer",
+      "presentation": {
+        "group": "Mod Development - ElevatorsAndEscalators",
+        "order": 2
+      },
+      "projectName": "ElevatorsAndEscalators",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\gameTestServerRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\gameTestServerRunVmArgs.txt",
+        "-Dfml.modFolders\u003delevators_escalators%%D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\run",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "Server",
+      "presentation": {
+        "group": "Mod Development - ElevatorsAndEscalators",
+        "order": 3
+      },
+      "projectName": "ElevatorsAndEscalators",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\serverRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\serverRunVmArgs.txt",
+        "-Dfml.modFolders\u003delevators_escalators%%D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\run",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    }
+  ]
+}

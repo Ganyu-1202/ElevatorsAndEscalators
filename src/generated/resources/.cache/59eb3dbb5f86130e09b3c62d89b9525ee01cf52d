@@ -1,0 +1,5 @@
+// 1.21.1	2025-11-29T01:20:36.2635456	Loot Tables
+b8a353b55568bf26bd61825728d765bc6f0dc2b3 data/elevators_escalators/loot_table/blocks/elevator_door.json
+5afcc0acb474bdd6a09ecfe668e95814d85b2c4c data/elevators_escalators/loot_table/blocks/inner_control_panel.json
+1b6116ec85357dcf3f3286928aa962d8763dfff4 data/elevators_escalators/loot_table/blocks/main_controller.json
+23bbcda67cb4f74e3188ed231b18550ec9fbd95a data/elevators_escalators/loot_table/blocks/outer_control_panel.json

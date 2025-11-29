@@ -1,0 +1,6 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+        "all": "elevators_escalators:block/main_controller"
+    }
+}

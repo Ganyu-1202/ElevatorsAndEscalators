@@ -1,0 +1,8 @@
+{
+  "values": [
+    "elevators_escalators:elevator_door",
+    "elevators_escalators:outer_control_panel",
+    "elevators_escalators:inner_control_panel",
+    "elevators_escalators:main_controller"
+  ]
+}
