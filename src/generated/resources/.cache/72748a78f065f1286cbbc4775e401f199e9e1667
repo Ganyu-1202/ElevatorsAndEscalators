@@ -1,4 +1,5 @@
-// 1.21.1	2025-11-29T01:20:36.2610277	Tags for minecraft:block mod id elevators_escalators
-483a03589df5f816b41605bf82cd15cf91049957 data/minecraft/tags/block/mineable/pickaxe.json
-4495d72f8ed0645cc44823421f50c807ec118fb1 data/minecraft/tags/block/needs_iron_tool.json
+// 1.21.1	2025-11-30T00:07:21.351653	Tags for minecraft:block mod id elevators_escalators
+080086db22c1122277770c692b42beb5441e740f data/minecraft/tags/block/mineable/pickaxe.json
+8075931b71db1c976904df21fad5e43ccf5f7de9 data/minecraft/tags/block/needs_diamond_tool.json
+f132ffb148eea17d918d0c91f8618e7a54e66275 data/minecraft/tags/block/needs_iron_tool.json
 89c453460f3bcf6537eeef6c5fe858d1f59072dd data/minecraft/tags/block/needs_stone_tool.json

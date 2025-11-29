@@ -26,13 +26,28 @@ public class ModBlockTagsProvider extends BlockTagsProvider
 
         // 需要铁制工具
         tag(BlockTags.NEEDS_IRON_TOOL)
-                .add(EnrollBlocks.ELEVATOR_DOOR_BLOCK.get());
+                .add(EnrollBlocks.ELEVATOR_DOOR_BLOCK.get())
+                .add(EnrollBlocks.HOME_ELEVATOR_FRAME_BLOCK.get())
+                .add(EnrollBlocks.ELEVATOR_POSITION_FRAME_BLOCK.get())
+                .add(EnrollBlocks.COMMERCIAL_ELEVATOR_FRAME_BLOCK.get());
+
+        // 需要钻石制工具
+        tag(BlockTags.NEEDS_DIAMOND_TOOL)
+                .add(EnrollBlocks.INDUSTRIAL_ELEVATOR_FRAME_BLOCK.get())
+                .add(EnrollBlocks.FIRE_FIGHTING_ELEVATOR_FRAME_BLOCK.get())
+                .add(EnrollBlocks.FIRE_FIGHTING_ELEVATOR_POSITION_FRAME_BLOCK.get());
 
         // 镐开采
         tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(EnrollBlocks.ELEVATOR_DOOR_BLOCK.get())
                 .add(EnrollBlocks.OUTER_CONTROL_PANEL_BLOCK.get())
                 .add(EnrollBlocks.INNER_CONTROL_PANEL_BLOCK.get())
-                .add(EnrollBlocks.MAIN_CONTROLLER_BLOCK.get());
+                .add(EnrollBlocks.MAIN_CONTROLLER_BLOCK.get())
+                .add(EnrollBlocks.HOME_ELEVATOR_FRAME_BLOCK.get())
+                .add(EnrollBlocks.COMMERCIAL_ELEVATOR_FRAME_BLOCK.get())
+                .add(EnrollBlocks.INDUSTRIAL_ELEVATOR_FRAME_BLOCK.get())
+                .add(EnrollBlocks.FIRE_FIGHTING_ELEVATOR_FRAME_BLOCK.get())
+                .add(EnrollBlocks.ELEVATOR_POSITION_FRAME_BLOCK.get())
+                .add(EnrollBlocks.FIRE_FIGHTING_ELEVATOR_POSITION_FRAME_BLOCK.get());
     }
 }

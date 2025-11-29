@@ -1,0 +1,5 @@
+{
+    "variants": {
+        "": { "model": "elevators_escalators:block/industrial_elevator_frame" }
+    }
+}

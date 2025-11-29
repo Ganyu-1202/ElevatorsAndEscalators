@@ -1,5 +1,7 @@
-// 1.21.1	2025-11-28T22:22:40.1344255	Block States: elevators_escalators
+// 1.21.1	2025-11-30T01:03:08.7811062	Block States: elevators_escalators
 bdb32e739a72e035efad5fd80ee5d95a5d91c974 assets/elevators_escalators/blockstates/elevator_door.json
+66626a5497b66cd06dc09de7ce3b61020eb4ac47 assets/elevators_escalators/blockstates/inner_control_panel.json
+02ed7bed28dfcb8509d24c0b650a7a7322cb0366 assets/elevators_escalators/blockstates/outer_control_panel.json
 8c081ad8b59eeb2bf34369ed15eb522f2b4be02a assets/elevators_escalators/models/block/elevator_door_bottom_left.json
 e54c6ef08185f31e1a47d132fe1761485f3f7ae6 assets/elevators_escalators/models/block/elevator_door_bottom_left_open.json
 d4f2962e0ec950394a253590f79415b13c8df0ff assets/elevators_escalators/models/block/elevator_door_bottom_right.json

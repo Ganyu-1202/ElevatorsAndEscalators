@@ -1,5 +1,7 @@
 {
     "creative_tabs.elevators_escalators.tab_title": "电梯和自动扶梯",
+    "More_information": "按住 Alt 键以获取更多信息",
+    "No_information": "[没有可用的附加信息。]",
     "block.elevators_escalators.example_block": "示例方块",
     "item.elevators_escalators.example_item": "示例物品",
     "item.elevators_escalators.mod_icon": "[电梯和自动扶梯图标]",
@@ -7,5 +9,13 @@
     "item.elevators_escalators.elevator_door": "电梯门",
     "block.elevators_escalators.outer_control_panel": "外部控制面板",
     "block.elevators_escalators.inner_control_panel": "内部控制面板",
-    "block.elevators_escalators.main_controller": "主控制器"
+    "block.elevators_escalators.main_controller": "主控制器",
+    "block.elevators_escalators.home_elevator_frame": "家用电梯结构框架",
+    "block.elevators_escalators.commercial_elevator_frame": "商用电梯结构框架",
+    "block.elevators_escalators.industrial_elevator_frame": "工业电梯结构框架",
+    "block.elevators_escalators.fire_fighting_elevator_frame": "消防电梯结构框架",
+    "block.elevators_escalators.elevator_position_frame": "电梯定位框架",
+    "block.elevators_escalators.elevator_position_frame.tooltip": "此方块用来标明电梯一楼的位置。\n建造时此方块放置的高度应与一楼的地面一致，\n在电梯井壁围成一圈。",
+    "block.elevators_escalators.fire_fighting_elevator_position_frame": "消防电梯定位框架",
+    "block.elevators_escalators.fire_fighting_elevator_position_frame.tooltip": "此方块用来标明消防电梯一楼的位置。\n与普通电梯定位框架作用类似。"
 }

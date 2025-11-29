@@ -3,6 +3,12 @@
     "elevators_escalators:elevator_door",
     "elevators_escalators:outer_control_panel",
     "elevators_escalators:inner_control_panel",
-    "elevators_escalators:main_controller"
+    "elevators_escalators:main_controller",
+    "elevators_escalators:home_elevator_frame",
+    "elevators_escalators:commercial_elevator_frame",
+    "elevators_escalators:industrial_elevator_frame",
+    "elevators_escalators:fire_fighting_elevator_frame",
+    "elevators_escalators:elevator_position_frame",
+    "elevators_escalators:fire_fighting_elevator_position_frame"
   ]
 }
