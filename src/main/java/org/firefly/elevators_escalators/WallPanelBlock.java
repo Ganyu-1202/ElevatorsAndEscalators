@@ -105,7 +105,8 @@ public class WallPanelBlock extends Block
     }
 
     @Override
-    public @Nonnull BlockState rotate(BlockState state, LevelAccessor world, BlockPos pos, Rotation rotation)
+    public @Nonnull BlockState rotate(BlockState state, @Nonnull LevelAccessor world, @Nonnull BlockPos pos,
+                                      Rotation rotation)
     {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }

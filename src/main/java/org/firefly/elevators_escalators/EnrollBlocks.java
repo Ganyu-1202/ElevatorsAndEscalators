@@ -67,7 +67,7 @@ public class EnrollBlocks
 
     // 注册名为 主控制器 的方块
     public static final DeferredBlock<Block> MAIN_CONTROLLER_BLOCK = BLOCKS.register("main_controller", () ->
-            new Block(BlockBehaviour.Properties.of()
+            new ControllerBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)
                     .strength(2.5f, 5.0f)
                     .sound(SoundType.METAL)
