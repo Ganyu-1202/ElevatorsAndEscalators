@@ -1,0 +1,5 @@
+{
+    "variants": {
+        "": { "model": "elevators_escalators:block/home_elevator_carriage" }
+    }
+}

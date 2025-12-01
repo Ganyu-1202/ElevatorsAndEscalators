@@ -12,11 +12,11 @@
       "projectName": "ElevatorsAndEscalators",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\clientRunProgramArgs.txt"
+        "@E:\\GitDownload\\ElevatorsAndEscalators\\build\\moddev\\clientRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\clientRunVmArgs.txt",
-        "-Dfml.modFolders\u003delevators_escalators%%D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\bin\\main"
+        "@E:\\GitDownload\\ElevatorsAndEscalators\\build\\moddev\\clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003delevators_escalators%%E:\\GitDownload\\ElevatorsAndEscalators\\bin\\main"
       ],
       "cwd": "${workspaceFolder}\\run",
       "env": {},
@@ -34,11 +34,11 @@
       "projectName": "ElevatorsAndEscalators",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\dataRunProgramArgs.txt"
+        "@E:\\GitDownload\\ElevatorsAndEscalators\\build\\moddev\\dataRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\dataRunVmArgs.txt",
-        "-Dfml.modFolders\u003delevators_escalators%%D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\bin\\main"
+        "@E:\\GitDownload\\ElevatorsAndEscalators\\build\\moddev\\dataRunVmArgs.txt",
+        "-Dfml.modFolders\u003delevators_escalators%%E:\\GitDownload\\ElevatorsAndEscalators\\bin\\main"
       ],
       "cwd": "${workspaceFolder}\\run",
       "env": {},
@@ -56,11 +56,11 @@
       "projectName": "ElevatorsAndEscalators",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\gameTestServerRunProgramArgs.txt"
+        "@E:\\GitDownload\\ElevatorsAndEscalators\\build\\moddev\\gameTestServerRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\gameTestServerRunVmArgs.txt",
-        "-Dfml.modFolders\u003delevators_escalators%%D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\bin\\main"
+        "@E:\\GitDownload\\ElevatorsAndEscalators\\build\\moddev\\gameTestServerRunVmArgs.txt",
+        "-Dfml.modFolders\u003delevators_escalators%%E:\\GitDownload\\ElevatorsAndEscalators\\bin\\main"
       ],
       "cwd": "${workspaceFolder}\\run",
       "env": {},
@@ -78,11 +78,11 @@
       "projectName": "ElevatorsAndEscalators",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\serverRunProgramArgs.txt"
+        "@E:\\GitDownload\\ElevatorsAndEscalators\\build\\moddev\\serverRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\build\\moddev\\serverRunVmArgs.txt",
-        "-Dfml.modFolders\u003delevators_escalators%%D:\\Files\\Project\\JetBrainsProjects\\IDEAProjects\\ElevatorsAndEscalators\\bin\\main"
+        "@E:\\GitDownload\\ElevatorsAndEscalators\\build\\moddev\\serverRunVmArgs.txt",
+        "-Dfml.modFolders\u003delevators_escalators%%E:\\GitDownload\\ElevatorsAndEscalators\\bin\\main"
       ],
       "cwd": "${workspaceFolder}\\run",
       "env": {},

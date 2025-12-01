@@ -136,6 +136,17 @@ public class EnrollBlocks
                     .lightLevel((state) -> 0)
             )
     );
+    // 注册名为 家用电梯轿厢 的方块（用于激活结构）
+    public static final DeferredBlock<Block> HOME_ELEVATOR_CARRIAGE_BLOCK = BLOCKS.register("home_elevator_carriage", () ->
+            new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(8.0f, 16.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion()
+                    .lightLevel((state) -> 0)
+            )
+    );
 
     static void commonSetup(final FMLCommonSetupEvent event)
     {

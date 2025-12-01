@@ -52,6 +52,8 @@ public class ModLootTableProvider extends LootTableProvider
             this.dropSelf(EnrollBlocks.ELEVATOR_POSITION_FRAME_BLOCK.get());
             // 消防电梯定位框架方块
             this.dropSelf(EnrollBlocks.FIRE_FIGHTING_ELEVATOR_POSITION_FRAME_BLOCK.get());
+            // 家用电梯轿厢方块
+            this.dropSelf(EnrollBlocks.HOME_ELEVATOR_CARRIAGE_BLOCK.get());
         }
 
         @Override
