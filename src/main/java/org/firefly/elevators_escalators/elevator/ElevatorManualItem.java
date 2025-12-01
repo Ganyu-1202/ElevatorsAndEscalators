@@ -1,4 +1,4 @@
-package org.firefly.elevators_escalators;
+package org.firefly.elevators_escalators.elevator;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,22 +13,23 @@ import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nonnull;
 
-import org.firefly.elevators_escalators.elevator.ShaftScanner;
+import org.firefly.elevators_escalators.ControllerBlock;
+import org.firefly.elevators_escalators.EnrollBlocks;
 
 import java.util.Objects;
 
 /**
  * 一本用来诊断电梯多方块结构为何未成型的手册（使用原版书模型）
  */
-public class HomeElevatorManualItem extends Item
+public class ElevatorManualItem extends Item
 {
-    public HomeElevatorManualItem(Properties properties)
+    public ElevatorManualItem(Properties properties)
     {
         super(properties);
     }
 
     @Override
-    public InteractionResult useOn(@Nonnull UseOnContext ctx)
+    public @Nonnull InteractionResult useOn(@Nonnull UseOnContext ctx)
     {
         Level level = ctx.getLevel();
         if (level.isClientSide) return InteractionResult.SUCCESS;
@@ -47,7 +48,7 @@ public class HomeElevatorManualItem extends Item
         }
 
         // 尝试从被点的方块读取朝向（若是控制器），否则使用玩家朝向作为参考
-    Direction facing = null;
+    Direction facing;
     DirectionProperty facingProperty = Objects.requireNonNull(ControllerBlock.FACING);
         if (state.hasProperty(facingProperty))
         {
@@ -62,7 +63,7 @@ public class HomeElevatorManualItem extends Item
             facing = Direction.NORTH;
         }
 
-        ShaftScanner.DiagnosticReport report = ShaftScanner.diagnose(level, pos, facing);
+        ElevatorShaftScanner.DiagnosticReport report = ElevatorShaftScanner.diagnose(level, pos, facing);
 
         if (player != null)
         {

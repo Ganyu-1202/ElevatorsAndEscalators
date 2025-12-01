@@ -82,33 +82,44 @@ public class HomeElevatorCarriageEntity extends Entity
         return super.getAddEntityPacket(serverEntity);
     }
 
-    public void initFloors(List<Integer> floors, int baseY, Map<Integer,Integer> map) {
+    public void initFloors(List<Integer> floors, int baseY, Map<Integer, Integer> map)
+    {
         this.floorYs = new ArrayList<>(floors);
         this.baseFloorY = baseY;
         this.yToLogicalFloor = new HashMap<>(map);
         this.targetY = getY(); // 初始停在当前位置
     }
 
-    public int getCurrentLogicalFloor() {
+    public int getCurrentLogicalFloor()
+    {
         int closestY = findClosestFloorY(getY());
         return yToLogicalFloor.getOrDefault(closestY, 0);
     }
 
-    private int findClosestFloorY(double y) {
-        int best = floorYs.get(0);
+    private int findClosestFloorY(double y)
+    {
+        int best = floorYs.getFirst();
         double bestDist = Math.abs(y - best);
-        for (int fy : floorYs) {
+        for (int fy : floorYs)
+        {
             double d = Math.abs(y - fy);
-            if (d < bestDist) { best = fy; bestDist = d; }
+            if (d < bestDist)
+            {
+                best = fy;
+                bestDist = d;
+            }
         }
         return best;
     }
 
-    public void moveToLogicalFloor(int logicalFloor) {
+    public void moveToLogicalFloor(int logicalFloor)
+    {
         // 找到目标绝对 Y
-        for (int fy : floorYs) {
+        for (int fy : floorYs)
+        {
             int lf = yToLogicalFloor.getOrDefault(fy, 0);
-            if (lf == logicalFloor) {
+            if (lf == logicalFloor)
+            {
                 this.targetY = fy + 1.0; // +1: 轿厢平台相对 floorY 的内部高度偏移
                 break;
             }
@@ -119,17 +130,20 @@ public class HomeElevatorCarriageEntity extends Entity
     public void tick()
     {
         super.tick();
-        
+
         double y = getY();
-        if (Math.abs(targetY - y) > 0.01) {
+        if (Math.abs(targetY - y) > 0.01)
+        {
             double dir = Math.signum(targetY - y);
             double newY = y + dir * MOVE_SPEED;
-            if ((dir > 0 && newY > targetY) || (dir < 0 && newY < targetY)) {
+            if ((dir > 0 && newY > targetY) || (dir < 0 && newY < targetY))
+            {
                 newY = targetY;
             }
             setPos(getX(), newY, getZ());
             // 同步乘客
-            for (var passenger : getPassengers()) {
+            for (var passenger : getPassengers())
+            {
                 passenger.setPos(passenger.getX(), newY, passenger.getZ());
             }
         }

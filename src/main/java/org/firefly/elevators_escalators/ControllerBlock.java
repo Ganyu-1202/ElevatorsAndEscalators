@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 
-import org.firefly.elevators_escalators.elevator.ShaftScanner;
+import org.firefly.elevators_escalators.elevator.ElevatorShaftScanner;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,7 +35,7 @@ public class ControllerBlock extends Block
         if (!(placer instanceof Player player)) return;
 
         Direction facing = state.hasProperty(FACING) ? state.getValue(FACING) : player.getDirection();
-        var report = ShaftScanner.diagnose(level, pos, facing);
+        var report = ElevatorShaftScanner.diagnose(level, pos, facing);
 
         if (report.structureReady())
         {

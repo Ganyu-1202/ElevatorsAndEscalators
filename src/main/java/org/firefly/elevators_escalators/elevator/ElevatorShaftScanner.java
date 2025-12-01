@@ -12,7 +12,9 @@ import org.firefly.elevators_escalators.EnrollBlocks;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class ShaftScanner
+
+
+public final class ElevatorShaftScanner
 {
     // 轿厢内尺寸
     public static final int INNER_WIDTH = 2;
@@ -24,7 +26,7 @@ public final class ShaftScanner
     // 门的判定高度相对楼层的偏移（门下半部分位于楼层上方 1 格）
     public static final int DOOR_HEIGHT_OFFSET = 1;
 
-    private ShaftScanner()
+    private ElevatorShaftScanner()
     {
     }
 

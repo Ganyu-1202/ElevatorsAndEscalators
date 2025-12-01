@@ -1,4 +1,4 @@
-package org.firefly.elevators_escalators;
+package org.firefly.elevators_escalators.elevator;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,14 +17,14 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 import javax.annotation.Nonnull;
 
-import org.firefly.elevators_escalators.elevator.ShaftScanner;
+import org.firefly.elevators_escalators.EnrollBlocks;
 
 import java.util.Objects;
 
 public class HomeElevatorBlueprintItem extends Item
 {
     private static final int FLOORS = 2;
-    private static final int FLOOR_STEP = ShaftScanner.REQUIRED_CLEAR_HEIGHT + 1;
+    private static final int FLOOR_STEP = ElevatorShaftScanner.REQUIRED_CLEAR_HEIGHT + 1;
     private static final BlockState FLOOR_STATE = Blocks.SMOOTH_STONE.defaultBlockState();
 
     public HomeElevatorBlueprintItem(Properties properties)
@@ -33,7 +33,7 @@ public class HomeElevatorBlueprintItem extends Item
     }
 
     @Override
-    public InteractionResult useOn(@Nonnull UseOnContext ctx)
+    public @Nonnull InteractionResult useOn(@Nonnull UseOnContext ctx)
     {
         Level level = ctx.getLevel();
         if (level.isClientSide) return InteractionResult.SUCCESS;
@@ -45,11 +45,11 @@ public class HomeElevatorBlueprintItem extends Item
         }
 
         BlockPos innerOrigin = Objects.requireNonNull(ctx.getClickedPos()).above();
-    Direction doorDir = Objects.requireNonNull(resolveDoorDirection(ctx));
+        Direction doorDir = Objects.requireNonNull(resolveDoorDirection(ctx));
 
         if (!hasEnoughSpace(level, innerOrigin))
         {
-            notifyPlayer(ctx.getPlayer(), "空间不足：请腾出 4x4x" + (FLOOR_STEP * FLOORS + ShaftScanner.REQUIRED_CLEAR_HEIGHT) + " 的区域。", true);
+            notifyPlayer(ctx.getPlayer(), "空间不足：请腾出 4x4x" + (FLOOR_STEP * FLOORS + ElevatorShaftScanner.REQUIRED_CLEAR_HEIGHT) + " 的区域。", true);
             return InteractionResult.FAIL;
         }
 
@@ -81,12 +81,12 @@ public class HomeElevatorBlueprintItem extends Item
     {
         int baseY = innerOrigin.getY();
         int topFloorY = baseY + (FLOORS - 1) * FLOOR_STEP;
-        int topY = topFloorY + ShaftScanner.REQUIRED_CLEAR_HEIGHT + 1;
+        int topY = topFloorY + ElevatorShaftScanner.REQUIRED_CLEAR_HEIGHT + 1;
 
-        int outerMinX = innerOrigin.getX() - ShaftScanner.FRAME_MARGIN;
-        int outerMaxX = innerOrigin.getX() + ShaftScanner.INNER_WIDTH - 1 + ShaftScanner.FRAME_MARGIN;
-        int outerMinZ = innerOrigin.getZ() - ShaftScanner.FRAME_MARGIN;
-        int outerMaxZ = innerOrigin.getZ() + ShaftScanner.INNER_DEPTH - 1 + ShaftScanner.FRAME_MARGIN;
+        int outerMinX = innerOrigin.getX() - ElevatorShaftScanner.FRAME_MARGIN;
+        int outerMaxX = innerOrigin.getX() + ElevatorShaftScanner.INNER_WIDTH - 1 + ElevatorShaftScanner.FRAME_MARGIN;
+        int outerMinZ = innerOrigin.getZ() - ElevatorShaftScanner.FRAME_MARGIN;
+        int outerMaxZ = innerOrigin.getZ() + ElevatorShaftScanner.INNER_DEPTH - 1 + ElevatorShaftScanner.FRAME_MARGIN;
 
         for (int y = baseY; y <= topY; y++)
         {
@@ -118,7 +118,7 @@ public class HomeElevatorBlueprintItem extends Item
 
     private static void buildFloor(Level level, BlockPos innerOrigin, int y, Direction doorDir, boolean isBaseFloor)
     {
-        int clearanceTop = y + ShaftScanner.REQUIRED_CLEAR_HEIGHT;
+        int clearanceTop = y + ElevatorShaftScanner.REQUIRED_CLEAR_HEIGHT;
         if (isBaseFloor)
         {
             placeFloor(level, innerOrigin, y);
@@ -128,15 +128,15 @@ public class HomeElevatorBlueprintItem extends Item
         {
             clearInterior(level, innerOrigin, y, clearanceTop);
         }
-    placeRing(level, innerOrigin, y, isBaseFloor, doorDir);
-    placeDoor(level, innerOrigin, y, Objects.requireNonNull(doorDir));
+        placeRing(level, innerOrigin, y, isBaseFloor, doorDir);
+        placeDoor(level, innerOrigin, y, Objects.requireNonNull(doorDir));
     }
 
     private static void placeFloor(Level level, BlockPos innerOrigin, int y)
     {
-        for (int dx = 0; dx < ShaftScanner.INNER_WIDTH; dx++)
+        for (int dx = 0; dx < ElevatorShaftScanner.INNER_WIDTH; dx++)
         {
-            for (int dz = 0; dz < ShaftScanner.INNER_DEPTH; dz++)
+            for (int dz = 0; dz < ElevatorShaftScanner.INNER_DEPTH; dz++)
             {
                 BlockPos pos = new BlockPos(innerOrigin.getX() + dx, y, innerOrigin.getZ() + dz);
                 level.setBlock(pos, Objects.requireNonNull(FLOOR_STATE), Block.UPDATE_ALL);
@@ -148,9 +148,9 @@ public class HomeElevatorBlueprintItem extends Item
     {
         for (int y = fromY; y <= toY; y++)
         {
-            for (int dx = 0; dx < ShaftScanner.INNER_WIDTH; dx++)
+            for (int dx = 0; dx < ElevatorShaftScanner.INNER_WIDTH; dx++)
             {
-                for (int dz = 0; dz < ShaftScanner.INNER_DEPTH; dz++)
+                for (int dz = 0; dz < ElevatorShaftScanner.INNER_DEPTH; dz++)
                 {
                     BlockPos pos = new BlockPos(innerOrigin.getX() + dx, y, innerOrigin.getZ() + dz);
                     level.setBlock(pos, Objects.requireNonNull(Blocks.AIR.defaultBlockState()), Block.UPDATE_ALL);
@@ -163,10 +163,10 @@ public class HomeElevatorBlueprintItem extends Item
     {
         BlockPos doorPos = computeDoorBase(innerOrigin, y, doorDir);
 
-        int outerMinX = innerOrigin.getX() - ShaftScanner.FRAME_MARGIN;
-        int outerMaxX = innerOrigin.getX() + ShaftScanner.INNER_WIDTH - 1 + ShaftScanner.FRAME_MARGIN;
-        int outerMinZ = innerOrigin.getZ() - ShaftScanner.FRAME_MARGIN;
-        int outerMaxZ = innerOrigin.getZ() + ShaftScanner.INNER_DEPTH - 1 + ShaftScanner.FRAME_MARGIN;
+        int outerMinX = innerOrigin.getX() - ElevatorShaftScanner.FRAME_MARGIN;
+        int outerMaxX = innerOrigin.getX() + ElevatorShaftScanner.INNER_WIDTH - 1 + ElevatorShaftScanner.FRAME_MARGIN;
+        int outerMinZ = innerOrigin.getZ() - ElevatorShaftScanner.FRAME_MARGIN;
+        int outerMaxZ = innerOrigin.getZ() + ElevatorShaftScanner.INNER_DEPTH - 1 + ElevatorShaftScanner.FRAME_MARGIN;
 
         for (int x = outerMinX; x <= outerMaxX; x++)
         {
@@ -188,7 +188,7 @@ public class HomeElevatorBlueprintItem extends Item
 
     private static void placeDoor(Level level, BlockPos innerOrigin, int floorY, @Nonnull Direction doorDir)
     {
-        int doorY = floorY + ShaftScanner.DOOR_HEIGHT_OFFSET;
+        int doorY = floorY + ElevatorShaftScanner.DOOR_HEIGHT_OFFSET;
         BlockPos doorLower = Objects.requireNonNull(computeDoorBase(innerOrigin, doorY, doorDir));
         BlockPos doorUpper = Objects.requireNonNull(doorLower.above());
 
@@ -219,11 +219,14 @@ public class HomeElevatorBlueprintItem extends Item
         Direction horizontal = dir.getAxis().isHorizontal() ? dir : Direction.SOUTH;
         return switch (horizontal)
         {
-            case NORTH -> new BlockPos(innerOrigin.getX(), floorY, innerOrigin.getZ() - ShaftScanner.FRAME_MARGIN);
-            case SOUTH -> new BlockPos(innerOrigin.getX(), floorY, innerOrigin.getZ() + ShaftScanner.INNER_DEPTH - 1 + ShaftScanner.FRAME_MARGIN);
-            case WEST -> new BlockPos(innerOrigin.getX() - ShaftScanner.FRAME_MARGIN, floorY, innerOrigin.getZ());
-            case EAST -> new BlockPos(innerOrigin.getX() + ShaftScanner.INNER_WIDTH - 1 + ShaftScanner.FRAME_MARGIN, floorY, innerOrigin.getZ());
-            default -> new BlockPos(innerOrigin.getX(), floorY, innerOrigin.getZ() + ShaftScanner.INNER_DEPTH - 1 + ShaftScanner.FRAME_MARGIN);
+            case NORTH -> new BlockPos(innerOrigin.getX(), floorY, innerOrigin.getZ() - ElevatorShaftScanner.FRAME_MARGIN);
+            case SOUTH ->
+                    new BlockPos(innerOrigin.getX(), floorY, innerOrigin.getZ() + ElevatorShaftScanner.INNER_DEPTH - 1 + ElevatorShaftScanner.FRAME_MARGIN);
+            case WEST -> new BlockPos(innerOrigin.getX() - ElevatorShaftScanner.FRAME_MARGIN, floorY, innerOrigin.getZ());
+            case EAST ->
+                    new BlockPos(innerOrigin.getX() + ElevatorShaftScanner.INNER_WIDTH - 1 + ElevatorShaftScanner.FRAME_MARGIN, floorY, innerOrigin.getZ());
+            default ->
+                    new BlockPos(innerOrigin.getX(), floorY, innerOrigin.getZ() + ElevatorShaftScanner.INNER_DEPTH - 1 + ElevatorShaftScanner.FRAME_MARGIN);
         };
     }
 

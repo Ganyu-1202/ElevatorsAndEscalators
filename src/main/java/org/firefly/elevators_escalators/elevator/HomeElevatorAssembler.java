@@ -27,7 +27,7 @@ public final class HomeElevatorAssembler
                                       @Nonnull Direction facing,
                                       @Nullable Player player)
     {
-        ShaftScanner.ScanResult scanResult = ShaftScanner.scan(level, controllerPos, facing);
+        ElevatorShaftScanner.ScanResult scanResult = ElevatorShaftScanner.scan(level, controllerPos, facing);
         List<Integer> floorYs = scanResult.floorYs();
         if (floorYs.isEmpty())
         {
@@ -49,7 +49,7 @@ public final class HomeElevatorAssembler
 
         for (int fy : floorYs)
         {
-            if (!ShaftScanner.floorHasDoor(level, controllerPos, facing, fy))
+            if (!ElevatorShaftScanner.floorHasDoor(level, controllerPos, facing, fy))
             {
                 notifyPlayer(player, "每一层都需要至少一扇电梯门。", true);
                 return false;
@@ -61,23 +61,23 @@ public final class HomeElevatorAssembler
         return true;
     }
 
-    private static void assemble(Level level, BlockPos controllerPos, ShaftScanner.ScanResult scanResult)
+    private static void assemble(Level level, BlockPos controllerPos, ElevatorShaftScanner.ScanResult scanResult)
     {
         BlockPos innerOrigin = controllerPos.below(4);
         int minX = innerOrigin.getX();
-        int maxX = innerOrigin.getX() + ShaftScanner.INNER_WIDTH - 1;
+        int maxX = innerOrigin.getX() + ElevatorShaftScanner.INNER_WIDTH - 1;
         int minZ = innerOrigin.getZ();
-        int maxZ = innerOrigin.getZ() + ShaftScanner.INNER_DEPTH - 1;
+        int maxZ = innerOrigin.getZ() + ElevatorShaftScanner.INNER_DEPTH - 1;
         double centerX = (minX + maxX) / 2.0 + 0.5;
         double centerZ = (minZ + maxZ) / 2.0 + 0.5;
         double centerY = scanResult.baseFloorY() + 1.0;
 
         int minFloor = scanResult.floorYs().get(0);
         int maxFloor = scanResult.floorYs().get(scanResult.floorYs().size() - 1);
-        int outerMinX = innerOrigin.getX() - ShaftScanner.FRAME_MARGIN;
-        int outerMinZ = innerOrigin.getZ() - ShaftScanner.FRAME_MARGIN;
-        int outerMaxX = innerOrigin.getX() + ShaftScanner.INNER_WIDTH - 1 + ShaftScanner.FRAME_MARGIN;
-        int outerMaxZ = innerOrigin.getZ() + ShaftScanner.INNER_DEPTH - 1 + ShaftScanner.FRAME_MARGIN;
+        int outerMinX = innerOrigin.getX() - ElevatorShaftScanner.FRAME_MARGIN;
+        int outerMinZ = innerOrigin.getZ() - ElevatorShaftScanner.FRAME_MARGIN;
+        int outerMaxX = innerOrigin.getX() + ElevatorShaftScanner.INNER_WIDTH - 1 + ElevatorShaftScanner.FRAME_MARGIN;
+        int outerMaxZ = innerOrigin.getZ() + ElevatorShaftScanner.INNER_DEPTH - 1 + ElevatorShaftScanner.FRAME_MARGIN;
 
         clearVolume(level, minFloor, maxFloor, outerMinX, outerMaxX, outerMinZ, outerMaxZ);
         level.removeBlock(controllerPos, false);

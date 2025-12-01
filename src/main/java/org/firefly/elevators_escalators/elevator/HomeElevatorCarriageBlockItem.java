@@ -1,4 +1,4 @@
-package org.firefly.elevators_escalators;
+package org.firefly.elevators_escalators.elevator;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -11,7 +11,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import org.firefly.elevators_escalators.elevator.HomeElevatorAssembler;
+import org.firefly.elevators_escalators.ControllerBlock;
+import org.firefly.elevators_escalators.EnrollBlocks;
 
 import javax.annotation.Nonnull;
 
