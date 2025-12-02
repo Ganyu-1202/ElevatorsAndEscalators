@@ -37,6 +37,8 @@ public class EnrollItems
 
     public static final DeferredItem<Item> HOME_ELEVATOR_FRAME_ITEM = ITEMS.register("home_elevator_frame", () ->
             new BlockItem(Objects.requireNonNull(EnrollBlocks.HOME_ELEVATOR_FRAME_BLOCK.get()), new Item.Properties()));
+    public static final DeferredItem<Item> HOME_ELEVATOR_CONTROL_BLOCK_ITEM = ITEMS.register("home_elevator_control_block", () ->
+            new BlockItem(Objects.requireNonNull(EnrollBlocks.HOME_ELEVATOR_CONTROL_BLOCK.get()), new Item.Properties()));
     public static final DeferredItem<Item> COMMERCIAL_ELEVATOR_FRAME_ITEM = ITEMS.register("commercial_elevator_frame", () ->
             new BlockItem(Objects.requireNonNull(EnrollBlocks.COMMERCIAL_ELEVATOR_FRAME_BLOCK.get()), new Item.Properties()));
     public static final DeferredItem<Item> INDUSTRIAL_ELEVATOR_FRAME_ITEM = ITEMS.register("industrial_elevator_frame", () ->
@@ -69,6 +71,7 @@ public class EnrollItems
                         output.accept(Objects.requireNonNull(OUTER_CONTROL_PANEL_ITEM.get()));
                         output.accept(Objects.requireNonNull(INNER_CONTROL_PANEL_ITEM.get()));
                         output.accept(Objects.requireNonNull(MAIN_CONTROLLER_ITEM.get()));
+                        output.accept(Objects.requireNonNull(HOME_ELEVATOR_CONTROL_BLOCK_ITEM.get()));
                         output.accept(Objects.requireNonNull(HOME_ELEVATOR_FRAME_ITEM.get()));
                         output.accept(Objects.requireNonNull(COMMERCIAL_ELEVATOR_FRAME_ITEM.get()));
                         output.accept(Objects.requireNonNull(INDUSTRIAL_ELEVATOR_FRAME_ITEM.get()));

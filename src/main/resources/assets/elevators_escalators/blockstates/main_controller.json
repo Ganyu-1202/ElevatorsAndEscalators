@@ -1,5 +1,12 @@
 {
     "variants": {
-        "": { "model": "elevators_escalators:block/main_controller" }
+        "assembled=false,facing=north": { "model": "elevators_escalators:block/main_controller" },
+        "assembled=false,facing=east": { "model": "elevators_escalators:block/main_controller", "y": 90 },
+        "assembled=false,facing=south": { "model": "elevators_escalators:block/main_controller", "y": 180 },
+        "assembled=false,facing=west": { "model": "elevators_escalators:block/main_controller", "y": 270 },
+        "assembled=true,facing=north": { "model": "elevators_escalators:block/main_controller" },
+        "assembled=true,facing=east": { "model": "elevators_escalators:block/main_controller", "y": 90 },
+        "assembled=true,facing=south": { "model": "elevators_escalators:block/main_controller", "y": 180 },
+        "assembled=true,facing=west": { "model": "elevators_escalators:block/main_controller", "y": 270 }
     }
 }

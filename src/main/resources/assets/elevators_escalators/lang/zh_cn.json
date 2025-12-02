@@ -12,6 +12,8 @@
     "block.elevators_escalators.outer_control_panel": "外部控制面板",
     "block.elevators_escalators.inner_control_panel": "内部控制面板",
     "block.elevators_escalators.main_controller": "主控制器",
+    "block.elevators_escalators.home_elevator_control_block": "家用电梯控制方块",
+    "item.elevators_escalators.home_elevator_control_block": "家用电梯控制方块",
     "block.elevators_escalators.home_elevator_frame": "家用电梯结构框架",
     "block.elevators_escalators.home_elevator_carriage": "家用电梯轿厢方块",
     "item.elevators_escalators.home_elevator_carriage": "家用电梯轿厢方块",

@@ -2,18 +2,9 @@ package org.firefly.elevators_escalators;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.MapColor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -25,12 +16,12 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
+import org.firefly.elevators_escalators.client.render.HomeElevatorCarriageRenderer;
+
+import java.util.Objects;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(ElevatorsEscalators.MODID)
@@ -48,12 +39,14 @@ public class ElevatorsEscalators
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
-        // Register the Deferred Register to the mod event bus so blocks get registered
-        EnrollBlocks.BLOCKS.register(modEventBus);
-        // Register the Deferred Register to the mod event bus so items get registered
-        EnrollItems.ITEMS.register(modEventBus);
-        // Register the Deferred Register to the mod event bus so tabs get registered
-        EnrollItems.CREATIVE_MODE_TABS.register(modEventBus);
+    // Register the Deferred Register to the mod event bus so blocks get registered
+    EnrollBlocks.BLOCKS.register(modEventBus);
+    // Register the Deferred Register to the mod event bus so items get registered
+    EnrollItems.ITEMS.register(modEventBus);
+    // Register the Deferred Register to the mod event bus so tabs get registered
+    EnrollItems.CREATIVE_MODE_TABS.register(modEventBus);
+    // Register entities so DeferredHolder#get works during client setup
+    EnrollEntities.ENTITIES.register(modEventBus);
 
         modEventBus.addListener(EnrollBlocks::commonSetup);
 
@@ -74,7 +67,11 @@ public class ElevatorsEscalators
         // Some common setup code
         LOGGER.info("HELLO FROM COMMON SETUP");
 
-        if (Config.logDirtBlock) LOGGER.info("DIRT BLOCK >> {}", BuiltInRegistries.BLOCK.getKey(Blocks.DIRT));
+        if (Config.logDirtBlock)
+        {
+        LOGGER.info("DIRT BLOCK >> {}", Objects.requireNonNull(
+            BuiltInRegistries.BLOCK.getKey(Objects.requireNonNull(Blocks.DIRT))));
+        }
 
         LOGGER.info("{}{}", Config.magicNumberIntroduction, Config.magicNumber);
 
@@ -105,6 +102,35 @@ public class ElevatorsEscalators
             // Some client setup code
             LOGGER.info("HELLO FROM CLIENT SETUP");
             LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+        event.enqueueWork(() -> EntityRenderers.register(
+            Objects.requireNonNull(EnrollEntities.HOME_ELEVATOR_CARRIAGE.get()),
+            HomeElevatorCarriageRenderer::new));
+        }
+
+        @SubscribeEvent
+        public static void registerBlockColors(RegisterColorHandlersEvent.Block event)
+        {
+            event.register((state, level, pos, tintIndex) ->
+            {
+                if (tintIndex != 0 || state == null)
+                {
+                    return 0xFFFFFF;
+                }
+        var assembledProperty = Objects.requireNonNull(ControllerBlock.ASSEMBLED);
+        if (state.hasProperty(assembledProperty)
+            && state.getValue(assembledProperty))
+                {
+                    return 0xFF3C3C;
+                }
+                return 0xFFFFFF;
+            }, EnrollBlocks.MAIN_CONTROLLER_BLOCK.get());
+        }
+
+        @SubscribeEvent
+        public static void registerItemColors(RegisterColorHandlersEvent.Item event)
+        {
+            event.register((stack, tintIndex) -> 0xFFFFFF,
+                    EnrollBlocks.MAIN_CONTROLLER_BLOCK.get());
         }
     }
 }

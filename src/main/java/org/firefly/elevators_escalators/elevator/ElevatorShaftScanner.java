@@ -30,7 +30,8 @@ public final class ElevatorShaftScanner
     {
     }
 
-    public record ScanResult(List<Integer> floorYs,
+    public record ScanResult(BlockPos innerOrigin,
+                             List<Integer> floorYs,
                              int baseFloorY,
                              Map<Integer, Integer> yToLogicalFloor,
                              boolean topLayerHasController)
@@ -57,7 +58,7 @@ public final class ElevatorShaftScanner
         int minY = innerOrigin.getY() - 32;
         int maxY = innerOrigin.getY() + 64;
 
-        List<Integer> rawFloors = new ArrayList<>();
+    List<Integer> rawFloors = new ArrayList<>();
         Integer baseFloor = null;
 
         for (int y = minY; y <= maxY; y++)
@@ -74,17 +75,16 @@ public final class ElevatorShaftScanner
 
         if (rawFloors.isEmpty() || baseFloor == null)
         {
-            return new ScanResult(List.of(), 0, Map.of(), false);
+            return new ScanResult(innerOrigin, List.of(), 0, Map.of(), false);
         }
 
         Collections.sort(rawFloors);
-        Map<Integer, Integer> map = new HashMap<>();
-        List<Integer> ordered = new ArrayList<>();
+        Map<Integer, Integer> map = new LinkedHashMap<>();
+        List<Integer> ordered = new ArrayList<>(rawFloors.size());
         for (int y : rawFloors)
         {
-            int logical = y - baseFloor;
-            map.put(y, logical);
             ordered.add(y);
+            map.put(y, ordered.size() - 1);
         }
         boolean topLayerHasController = false;
         if (!ordered.isEmpty())
@@ -93,7 +93,7 @@ public final class ElevatorShaftScanner
             topLayerHasController = ringHasMainController(level, innerOrigin.getX(), topFloorY, innerOrigin.getZ());
         }
 
-        return new ScanResult(ordered, baseFloor, map, topLayerHasController);
+    return new ScanResult(innerOrigin, ordered, baseFloor, map, topLayerHasController);
     }
 
     public static DiagnosticReport diagnose(Level level, BlockPos controllerPos, Direction facing)
@@ -124,6 +124,7 @@ public final class ElevatorShaftScanner
         List<Integer> floorsBadInner = new ArrayList<>();
         List<Integer> floorsObstructed = new ArrayList<>();
         List<Integer> floorsMissingDoor = new ArrayList<>();
+    List<Integer> floorsMissingControl = new ArrayList<>();
         List<Integer> floorsWithPositionInvalid = new ArrayList<>();
         Integer baseFloorY = null;
         boolean hasAnyPositionFrame = false;
@@ -138,7 +139,7 @@ public final class ElevatorShaftScanner
             {
                 problems.add("以下高度检测到未闭合的框架环：" + formatFloors(partialRingFloors));
             }
-            suggestions.add("在目标高度用家用电梯结构方块/定位框架补齐一圈，形成 4x4 的空心外圈。");
+            suggestions.add("在目标高度用任意实心方块或框架方块围成 4x4 的空心外圈，并至少放置一块家用电梯控制方块。");
             return new DiagnosticReport(false, List.copyOf(problems), List.copyOf(suggestions), List.of(), null);
         }
 
@@ -162,16 +163,27 @@ public final class ElevatorShaftScanner
                 floorsObstructed.add(y);
             }
 
-            if (inspection.isUsable())
+            boolean structuralReady = inspection.isUsable();
+            boolean hasControl = hasControlBlock(level, innerOrigin.getX(), y, innerOrigin.getZ());
+            if (structuralReady && !hasControl)
             {
-                buildableFloors.add(y);
-                if (hasPosition && baseFloorY == null)
-                {
-                    baseFloorY = y;
-                }
+                floorsMissingControl.add(y);
+            }
+
+            if (structuralReady)
+            {
                 if (!floorHasDoor(level, controllerPos, facing, y))
                 {
                     floorsMissingDoor.add(y);
+                }
+
+                if (hasControl)
+                {
+                    buildableFloors.add(y);
+                    if (hasPosition && baseFloorY == null)
+                    {
+                        baseFloorY = y;
+                    }
                 }
             }
             else if (hasPosition)
@@ -198,6 +210,11 @@ public final class ElevatorShaftScanner
         {
             problems.add("以下楼层缺少电梯门：" + formatFloors(floorsMissingDoor));
             suggestions.add("在这些楼层外围的一侧、楼层上方一格的位置放置一扇电梯门（下半部分）。");
+        }
+        if (!floorsMissingControl.isEmpty())
+        {
+            problems.add("以下楼层缺少家用电梯控制方块：" + formatFloors(floorsMissingControl));
+            suggestions.add("在这些楼层的外圈至少替换一块为家用电梯控制方块。");
         }
         if (buildableFloors.size() > 32)
         {
@@ -250,8 +267,8 @@ public final class ElevatorShaftScanner
 
     private static Optional<BlockPos> inferInnerOriginFromRing(Level level, BlockPos controllerPos)
     {
-        Block start = level.getBlockState(controllerPos).getBlock();
-        if (!isRingBlock(start))
+        BlockState startState = level.getBlockState(Objects.requireNonNull(controllerPos));
+        if (!isRingBlock(startState))
         {
             return Optional.empty();
         }
@@ -267,10 +284,10 @@ public final class ElevatorShaftScanner
             BlockPos current = queue.poll();
             for (Direction dir : Direction.Plane.HORIZONTAL)
             {
-                BlockPos next = current.relative(dir);
+                BlockPos next = current.relative(Objects.requireNonNull(dir));
                 if (next.getY() != planeY || visited.contains(next)) continue;
-                Block b = level.getBlockState(next).getBlock();
-                if (!isRingBlock(b)) continue;
+                BlockState state = level.getBlockState(next);
+                if (!isRingBlock(state)) continue;
                 visited.add(next);
                 queue.add(next);
             }
@@ -312,8 +329,8 @@ public final class ElevatorShaftScanner
                 boolean edge = (x == outerMinX || x == outerMaxX || z == outerMinZ || z == outerMaxZ);
                 if (!edge) continue;
                 BlockPos p = new BlockPos(x, y, z);
-                Block b = level.getBlockState(p).getBlock();
-                if (isRingBlock(b))
+                BlockState state = level.getBlockState(p);
+                if (isRingBlock(state))
                 {
                     return true;
                 }
@@ -399,7 +416,8 @@ public final class ElevatorShaftScanner
                 Block b = bs.getBlock();
                 if (b == EnrollBlocks.ELEVATOR_DOOR_BLOCK.get())
                 {
-                    if (bs.hasProperty(DoorBlock.HALF) && bs.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER)
+                    if (bs.hasProperty(Objects.requireNonNull(DoorBlock.HALF))
+                            && bs.getValue(Objects.requireNonNull(DoorBlock.HALF)) == DoubleBlockHalf.LOWER)
                     {
                         return true;
                     }
@@ -433,8 +451,8 @@ public final class ElevatorShaftScanner
                 boolean edge = (x == outerMinX || x == outerMaxX || z == outerMinZ || z == outerMaxZ);
                 if (!edge) continue; // 只看外围一圈
                 BlockPos p = new BlockPos(x, y, z);
-                Block b = level.getBlockState(p).getBlock();
-                if (!isRingBlock(b))
+                BlockState state = level.getBlockState(p);
+                if (!isRingBlock(state))
                 {
                     return false;
                 }
@@ -467,6 +485,30 @@ public final class ElevatorShaftScanner
         return false;
     }
 
+    private static boolean hasControlBlock(Level level, int originX, int y, int originZ)
+    {
+        int outerMinX = originX - FRAME_MARGIN;
+        int outerMinZ = originZ - FRAME_MARGIN;
+        int outerMaxX = originX + INNER_WIDTH - 1 + FRAME_MARGIN;
+        int outerMaxZ = originZ + INNER_DEPTH - 1 + FRAME_MARGIN;
+
+        for (int x = outerMinX; x <= outerMaxX; x++)
+        {
+            for (int z = outerMinZ; z <= outerMaxZ; z++)
+            {
+                boolean edge = (x == outerMinX || x == outerMaxX || z == outerMinZ || z == outerMaxZ);
+                if (!edge) continue;
+                BlockPos p = new BlockPos(x, y, z);
+                Block b = level.getBlockState(p).getBlock();
+                if (b == EnrollBlocks.HOME_ELEVATOR_CONTROL_BLOCK.get())
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static boolean ringHasMainController(Level level, int originX, int y, int originZ)
     {
         int outerMinX = originX - FRAME_MARGIN;
@@ -491,15 +533,9 @@ public final class ElevatorShaftScanner
         return false;
     }
 
-    private static boolean isRingBlock(Block b)
+    private static boolean isRingBlock(BlockState state)
     {
-        return b == EnrollBlocks.HOME_ELEVATOR_FRAME_BLOCK.get()
-                || b == EnrollBlocks.COMMERCIAL_ELEVATOR_FRAME_BLOCK.get()
-                || b == EnrollBlocks.INDUSTRIAL_ELEVATOR_FRAME_BLOCK.get()
-                || b == EnrollBlocks.FIRE_FIGHTING_ELEVATOR_FRAME_BLOCK.get()
-        || b == EnrollBlocks.ELEVATOR_DOOR_BLOCK.get()
-        || b == EnrollBlocks.MAIN_CONTROLLER_BLOCK.get()
-                || isPositionFrameBlock(b);
+        return state != null && !state.isAir();
     }
 
     private static boolean isPositionFrameBlock(Block b)

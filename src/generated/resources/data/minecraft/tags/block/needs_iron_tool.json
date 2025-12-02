@@ -1,6 +1,7 @@
 {
   "values": [
     "elevators_escalators:elevator_door",
+    "elevators_escalators:home_elevator_control_block",
     "elevators_escalators:home_elevator_frame",
     "elevators_escalators:elevator_position_frame",
     "elevators_escalators:commercial_elevator_frame"

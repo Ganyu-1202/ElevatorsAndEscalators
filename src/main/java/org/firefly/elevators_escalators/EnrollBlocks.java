@@ -21,6 +21,10 @@ import static org.firefly.elevators_escalators.ElevatorsEscalators.*;
 
 import javax.annotation.Nonnull;
 
+import org.firefly.elevators_escalators.elevator.HomeElevatorCarriageBlock;
+import org.firefly.elevators_escalators.elevator.HomeElevatorControlBlock;
+
+@SuppressWarnings("null")
 public class EnrollBlocks
 {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
@@ -70,6 +74,17 @@ public class EnrollBlocks
             new ControllerBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)
                     .strength(2.5f, 5.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel((state) -> 0)
+            )
+    );
+
+    // 注册名为 家用电梯控制方块 的方块
+    public static final DeferredBlock<Block> HOME_ELEVATOR_CONTROL_BLOCK = BLOCKS.register("home_elevator_control_block", () ->
+            new HomeElevatorControlBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(8.0f, 16.0f)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
                     .lightLevel((state) -> 0)
@@ -138,7 +153,7 @@ public class EnrollBlocks
     );
     // 注册名为 家用电梯轿厢 的方块（用于激活结构）
     public static final DeferredBlock<Block> HOME_ELEVATOR_CARRIAGE_BLOCK = BLOCKS.register("home_elevator_carriage", () ->
-            new Block(BlockBehaviour.Properties.of()
+            new HomeElevatorCarriageBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)
                     .strength(8.0f, 16.0f)
                     .sound(SoundType.METAL)
@@ -160,6 +175,8 @@ public class EnrollBlocks
         LOGGER.info("INNER_CONTROL_PANEL_BLOCK in mineable/pickaxe: {}", INNER_CONTROL_PANEL_BLOCK.get().defaultBlockState().is(BlockTags.MINEABLE_WITH_PICKAXE));
         LOGGER.info("MAIN_CONTROLLER_BLOCK in mineable/pickaxe: {}", MAIN_CONTROLLER_BLOCK.get().defaultBlockState().is(BlockTags.MINEABLE_WITH_PICKAXE));
         LOGGER.info("MAIN_CONTROLLER_BLOCK in needs_stone_tool: {}", MAIN_CONTROLLER_BLOCK.get().defaultBlockState().is(BlockTags.NEEDS_STONE_TOOL));
+        LOGGER.info("HOME_ELEVATOR_CONTROL_BLOCK in mineable/pickaxe: {}", HOME_ELEVATOR_CONTROL_BLOCK.get().defaultBlockState().is(BlockTags.MINEABLE_WITH_PICKAXE));
+        LOGGER.info("HOME_ELEVATOR_CONTROL_BLOCK in needs_iron_tool: {}", HOME_ELEVATOR_CONTROL_BLOCK.get().defaultBlockState().is(BlockTags.NEEDS_IRON_TOOL));
         LOGGER.info("HOME_ELEVATOR_FRAME_BLOCK in mineable/pickaxe: {}", HOME_ELEVATOR_FRAME_BLOCK.get().defaultBlockState().is(BlockTags.MINEABLE_WITH_PICKAXE));
         LOGGER.info("HOME_ELEVATOR_FRAME_BLOCK in needs_iron_tool: {}", HOME_ELEVATOR_FRAME_BLOCK.get().defaultBlockState().is(BlockTags.NEEDS_IRON_TOOL));
         LOGGER.info("COMMERCIAL_ELEVATOR_FRAME_BLOCK in mineable/pickaxe: {}", COMMERCIAL_ELEVATOR_FRAME_BLOCK.get().defaultBlockState().is(BlockTags.MINEABLE_WITH_PICKAXE));

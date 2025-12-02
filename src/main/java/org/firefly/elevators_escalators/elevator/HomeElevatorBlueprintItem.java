@@ -129,6 +129,7 @@ public class HomeElevatorBlueprintItem extends Item
             clearInterior(level, innerOrigin, y, clearanceTop);
         }
         placeRing(level, innerOrigin, y, isBaseFloor, doorDir);
+        placeControlBlock(level, innerOrigin, y, Objects.requireNonNull(doorDir));
         placeDoor(level, innerOrigin, y, Objects.requireNonNull(doorDir));
     }
 
@@ -186,6 +187,37 @@ public class HomeElevatorBlueprintItem extends Item
         }
     }
 
+    private static void placeControlBlock(Level level, BlockPos innerOrigin, int y, Direction doorDir)
+    {
+        BlockPos controlPos = findControlPlacement(innerOrigin, y, doorDir);
+        if (controlPos != null)
+        {
+            level.setBlock(controlPos, Objects.requireNonNull(controlBlockState()), Block.UPDATE_ALL);
+        }
+    }
+
+    private static BlockPos findControlPlacement(BlockPos innerOrigin, int y, Direction doorDir)
+    {
+        BlockPos doorPos = computeDoorBase(innerOrigin, y, doorDir);
+        int outerMinX = innerOrigin.getX() - ElevatorShaftScanner.FRAME_MARGIN;
+        int outerMaxX = innerOrigin.getX() + ElevatorShaftScanner.INNER_WIDTH - 1 + ElevatorShaftScanner.FRAME_MARGIN;
+        int outerMinZ = innerOrigin.getZ() - ElevatorShaftScanner.FRAME_MARGIN;
+        int outerMaxZ = innerOrigin.getZ() + ElevatorShaftScanner.INNER_DEPTH - 1 + ElevatorShaftScanner.FRAME_MARGIN;
+
+        for (int x = outerMinX; x <= outerMaxX; x++)
+        {
+            for (int z = outerMinZ; z <= outerMaxZ; z++)
+            {
+                boolean edge = (x == outerMinX || x == outerMaxX || z == outerMinZ || z == outerMaxZ);
+                if (!edge) continue;
+                BlockPos pos = new BlockPos(x, y, z);
+                if (pos.equals(doorPos)) continue;
+                return pos;
+            }
+        }
+        return null;
+    }
+
     private static void placeDoor(Level level, BlockPos innerOrigin, int floorY, @Nonnull Direction doorDir)
     {
         int doorY = floorY + ElevatorShaftScanner.DOOR_HEIGHT_OFFSET;
@@ -233,6 +265,12 @@ public class HomeElevatorBlueprintItem extends Item
     private static @Nonnull BlockState frameState()
     {
         Block block = Objects.requireNonNull(EnrollBlocks.HOME_ELEVATOR_FRAME_BLOCK.get());
+        return Objects.requireNonNull(block.defaultBlockState());
+    }
+
+    private static @Nonnull BlockState controlBlockState()
+    {
+        Block block = Objects.requireNonNull(EnrollBlocks.HOME_ELEVATOR_CONTROL_BLOCK.get());
         return Objects.requireNonNull(block.defaultBlockState());
     }
 
