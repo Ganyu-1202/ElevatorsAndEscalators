@@ -24,7 +24,7 @@ public final class ModContent {
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(ID, Registries.CREATIVE_MODE_TAB);
     public static final RegistrySupplier<ElevatorControllerBlock> CONTROLLER = BLOCKS.register("elevator_controller", () -> new ElevatorControllerBlock(BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops()));
     public static final RegistrySupplier<ShaftFrameBlock> FRAME = BLOCKS.register("shaft_frame", () -> new ShaftFrameBlock(BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops().noOcclusion()));
-    public static final RegistrySupplier<BlockItem> FRAME_ITEM = ITEMS.register("shaft_frame", () -> new BlockItem(FRAME.get(),new Item.Properties()));
+    public static final RegistrySupplier<BlockItem> FRAME_ITEM = ITEMS.register("shaft_frame", () -> new ShaftFrameItem(FRAME.get(),new Item.Properties()));
     public static final RegistrySupplier<EscalatorBlock> ESCALATOR = BLOCKS.register("escalator", () -> new EscalatorBlock(BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops()));
     public static final RegistrySupplier<BlockEntityType<ElevatorControllerBlockEntity>> CONTROLLER_BE = BLOCK_ENTITIES.register("elevator_controller", () -> BlockEntityType.Builder.of(ElevatorControllerBlockEntity::new, CONTROLLER.get()).build(null));
     public static final RegistrySupplier<EntityType<ElevatorPlatformEntity>> PLATFORM = ENTITIES.register("elevator_platform", () -> EntityType.Builder.<ElevatorPlatformEntity>of(ElevatorPlatformEntity::new, MobCategory.MISC).sized(3F, 0.25F).clientTrackingRange(10).updateInterval(1).fireImmune().build(ID + ":elevator_platform"));

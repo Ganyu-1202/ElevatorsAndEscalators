@@ -30,5 +30,10 @@
   "screen.elevators_escalators.closed": "门状态：关闭",
   "screen.elevators_escalators.opened": "门状态：开启",
   "message.elevators_escalators.door_moving": "运行中不能手动开关门。",
-  "message.elevators_escalators.door_blocked": "门口有人，无法关门。"
+  "message.elevators_escalators.door_blocked": "门口有人，无法关门。",
+  "message.elevators_escalators.shaft_invalid": "施工范围越界、区块未加载或无建造权限。",
+  "message.elevators_escalators.shaft_obstructed": "井道框架位置被占用：%s。未开始施工，不会覆盖建筑。",
+  "message.elevators_escalators.shaft_exists": "井道框架已经完整，无需重复施工。",
+  "message.elevators_escalators.shaft_materials": "需要 %s 个框架，背包与副手共 %s 个。未开始施工。",
+  "message.elevators_escalators.shaft_built": "井道框架已放置 %s / %s 个。南侧入口保留。"
 }

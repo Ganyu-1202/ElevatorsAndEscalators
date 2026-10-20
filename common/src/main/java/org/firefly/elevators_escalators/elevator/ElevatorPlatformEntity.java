@@ -18,7 +18,11 @@ public final class ElevatorPlatformEntity extends Entity {
     private static final EntityDataAccessor<Integer> DIRECTION=SynchedEntityData.defineId(ElevatorPlatformEntity.class,EntityDataSerializers.INT);
     public int currentFloor() { return entityData.get(CURRENT_FLOOR); }
     public int travelDirection() { return entityData.get(DIRECTION); }
+    private final DoorTimer autoDoor=new DoorTimer();
+    private boolean arrivalPending;
+    public void controlActivity() { autoDoor.reset(); }
     public boolean manualDoor(Player player,boolean close) {
+        controlActivity();
         if (level().isClientSide || player.isSpectator()) return false;
         if (Math.abs(controller.getY()+1+targetOffset()-getY())>1e-4) {
             ElevatorControllerBlockEntity.tell(player,"door_moving"); return false;
@@ -27,7 +31,7 @@ public final class ElevatorPlatformEntity extends Entity {
         entityData.set(CLOSED,close); manualClosed=close; return true;
     }
     private boolean doorwayOccupied() {
-        return !level().getEntities(this,new AABB(getX()-1,getY()+.25,getZ()+1.375,getX()+1,getY()+3,getZ()+1.5),e -> e instanceof LivingEntity && !e.isSpectator()).isEmpty();
+        return !level().getEntities(this,new AABB(getX()-1.1,getY()+.25,getZ()+1.1,getX()+1.1,getY()+3,getZ()+1.8),e -> e instanceof LivingEntity && !e.isSpectator()).isEmpty();
     }
     private boolean manualClosed;
     private int doorTicks;
@@ -111,7 +115,8 @@ public final class ElevatorPlatformEntity extends Entity {
                 || java.util.Arrays.stream(be.floors()).noneMatch(v->v==offset)) return;
         waitingForRiders=false; savedRiders.clear(); riderOffsets.clear();
         entityData.set(TARGET,offset); entityData.set(UP,controller.getY()+1+offset>getY());
-        doorTicks=10; manualClosed=false;
+        doorTicks=10; manualClosed=false; autoDoor.reset();
+        arrivalPending=Math.abs(controller.getY()+1+offset-getY())>1e-4;
         player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.elevators_escalators.floor_target",offset),true);
     }
     public static boolean clear(Level level, AABB area) {
@@ -159,7 +164,11 @@ public final class ElevatorPlatformEntity extends Entity {
             entityData.set(CURRENT_FLOOR,FloorDisplay.number(stops,getY()-controller.getY()-1));
             double target=controller.getY()+1+targetOffset();
             entityData.set(DIRECTION,Math.abs(target-getY())<1e-6?0:(target>getY()?1:-1));
-            if (Math.abs(target-getY())<1e-6) { if (!manualClosed) entityData.set(CLOSED,false); speed=0; return; }
+            if (Math.abs(target-getY())<1e-6) {
+                if (arrivalPending) { entityData.set(CLOSED,false); manualClosed=false; arrivalPending=false; autoDoor.reset(); }
+                if (autoDoor.tick(!doorsClosed(),doorwayOccupied())) { entityData.set(CLOSED,true); manualClosed=true; }
+                speed=0; return;
+            }
             if (!doorsClosed()) {
                 if (doorwayOccupied()) return;
                 entityData.set(CLOSED,true); doorTicks=10;
@@ -218,6 +227,6 @@ public final class ElevatorPlatformEntity extends Entity {
                 riderOffsets.put(item.getUUID("Player"),new Vec3(x,0,z));
         }
         savedRiders.addAll(riderOffsets.keySet());
-        waitingForRiders=!savedRiders.isEmpty(); loadGrace=40; speed=0; entityData.set(CLOSED,Math.abs(controller.getY()+1+targetOffset()-getY())>1e-4);
+        waitingForRiders=!savedRiders.isEmpty(); loadGrace=40; speed=0; arrivalPending=Math.abs(controller.getY()+1+targetOffset()-getY())>1e-4; autoDoor.reset(); entityData.set(CLOSED,arrivalPending);
     }
 }

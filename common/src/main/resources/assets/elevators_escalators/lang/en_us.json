@@ -30,5 +30,10 @@
   "screen.elevators_escalators.closed": "Doors: closed",
   "screen.elevators_escalators.opened": "Doors: open",
   "message.elevators_escalators.door_moving": "Manual doors unavailable during travel.",
-  "message.elevators_escalators.door_blocked": "Doorway occupied."
+  "message.elevators_escalators.door_blocked": "Doorway occupied.",
+  "message.elevators_escalators.shaft_invalid": "Build area out of bounds, unloaded, or not permitted.",
+  "message.elevators_escalators.shaft_obstructed": "Shaft frame obstructed at %s. Construction not started; buildings are not replaced.",
+  "message.elevators_escalators.shaft_exists": "Shaft frame already complete.",
+  "message.elevators_escalators.shaft_materials": "Need %s frames; inventory and offhand contain %s. Construction not started.",
+  "message.elevators_escalators.shaft_built": "Placed %s / %s shaft frames. South entrances remain open."
 }

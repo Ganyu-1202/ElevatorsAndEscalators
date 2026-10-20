@@ -36,6 +36,7 @@ public final class ElevatorMenu extends AbstractContainerMenu {
     public static void open(Player player,ElevatorPlatformEntity platform) {
         if (!(player instanceof ServerPlayer server) || player.isSpectator()) return;
         if (!(platform.level().getBlockEntity(platform.controllerPos()) instanceof ElevatorControllerBlockEntity be)) return;
+        platform.controlActivity();
         int[] floors=be.floors();
         MenuRegistry.openExtendedMenu(server,new SimpleMenuProvider((id,inv,p) -> new ElevatorMenu(id,inv,platform.getId(),floors),Component.translatable("screen.elevators_escalators.title")),buf -> {
             buf.writeVarInt(platform.getId()); buf.writeVarIntArray(floors);
@@ -44,6 +45,7 @@ public final class ElevatorMenu extends AbstractContainerMenu {
     @Override public boolean stillValid(Player player) { return platform!=null && platform.isAlive() && !player.isSpectator() && player.level()==platform.level() && player.distanceToSqr(platform)<=64*64; }
     @Override public boolean clickMenuButton(Player player,int button) {
         if (!stillValid(player) || player.level().isClientSide) return false;
+        platform.controlActivity();
         if (button>=0 && button<floors.length) { platform.requestFloor(player,floors[button]); return true; }
         if (button==100 || button==101) return platform.manualDoor(player,button==101);
         return false;

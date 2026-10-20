@@ -19,6 +19,15 @@ public final class ElevatorPlatformRenderer extends EntityRenderer<ElevatorPlatf
         Minecraft.getInstance().getBlockRenderer().renderSingleBlock(block.defaultBlockState(),pose,buffers,light,OverlayTexture.NO_OVERLAY);
         pose.popPose();
     }
+    private void digit(int value,double x,PoseStack pose,MultiBufferSource buffers) {
+        int mask=org.firefly.elevators_escalators.elevator.SegmentDisplay.digit(value);
+        double[][] bars={{.02,.24,.10,.018},{.12,.13,.018,.11},{.12,.02,.018,.11},
+            {.02,0,.10,.018},{0,.02,.018,.11},{0,.13,.018,.11},{.02,.12,.10,.018}};
+        for(int i=0;i<7;i++) if((mask & (1<<i))!=0) {
+            double[] b=bars[i];
+            part(Blocks.LIME_CONCRETE,x+b[0],2.15+b[1],-1.337,b[2],b[3],.012,pose,buffers,0xF000F0);
+        }
+    }
     @Override public void render(ElevatorPlatformEntity entity,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light) {
         for(int x=-1;x<=1;x++) for(int z=-1;z<=1;z++)
             part(Blocks.IRON_BLOCK,x-.5,0,z-.5,1,.25,1,pose,buffers,light);
@@ -31,13 +40,26 @@ public final class ElevatorPlatformRenderer extends EntityRenderer<ElevatorPlatf
         // Four slim steel corner uprights.
         for(double x:new double[]{-1.5,1.375}) for(double z:new double[]{-1.5,1.375})
             part(Blocks.IRON_BLOCK,x,.25,z,.125,2.75,.125,pose,buffers,light);
-        // Back-wall display faces the cabin interior (+Z), full-bright text.
-        pose.pushPose(); pose.translate(0,2.35,-1.365); pose.scale(.012F,-.012F,.012F);
-        String label=entity.currentFloor()+"F"+(entity.travelDirection()>0?" ^":entity.travelDirection()<0?" v":"");
-        var font=Minecraft.getInstance().font;
-        font.drawInBatch(label,-font.width(label)/2F,0,0x66FFAA,false,pose.last().pose(),buffers,
-            net.minecraft.client.gui.Font.DisplayMode.NORMAL,0xFF102020,0xF000F0);
-        pose.popPose();
+        // Separate opaque housing from glyphs: the font background quad must not
+        // compete with the text/transparent cabin wall in the depth buffer.
+        part(Blocks.BLACK_CONCRETE,-.42,2.10,-1.374,.84,.36,.025,pose,buffers,0xF000F0);
+        String number=org.firefly.elevators_escalators.elevator.SegmentDisplay.floor(entity.currentFloor());
+        double start=-.26;
+        // Viewed from inside (+Z looking north), world +X is screen-right.
+        for(int i=0;i<number.length();i++) digit(number.charAt(i)-'0',start+i*.17,pose,buffers);
+        // Fixed F label drawn from the same opaque, full-bright geometry.
+        double fx=.12;
+        part(Blocks.LIME_CONCRETE,fx,2.15,-1.337,.018,.258,.012,pose,buffers,0xF000F0);
+        part(Blocks.LIME_CONCRETE,fx,2.39,-1.337,.11,.018,.012,pose,buffers,0xF000F0);
+        part(Blocks.LIME_CONCRETE,fx,2.27,-1.337,.09,.018,.012,pose,buffers,0xF000F0);
+        int direction=entity.travelDirection();
+        if(direction!=0) {
+            for(int i=0;i<3;i++) {
+                double y=direction>0?2.34-i*.035:2.21+i*.035;
+                part(Blocks.LIME_CONCRETE,.30-i*.025,y,-1.337,.025,.025,.012,pose,buffers,0xF000F0);
+                part(Blocks.LIME_CONCRETE,.30+i*.025,y,-1.337,.025,.025,.012,pose,buffers,0xF000F0);
+            }
+        }
         super.render(entity,yaw,partial,pose,buffers,light);
     }
 }
