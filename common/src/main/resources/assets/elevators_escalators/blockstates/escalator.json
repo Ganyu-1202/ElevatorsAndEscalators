@@ -1,0 +1,44 @@
+{
+  "variants": {
+    "facing=north,reversed=false": {
+      "model": "elevators_escalators:block/escalator",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=north,reversed=true": {
+      "model": "elevators_escalators:block/escalator",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=east,reversed=false": {
+      "model": "elevators_escalators:block/escalator",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=east,reversed=true": {
+      "model": "elevators_escalators:block/escalator",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=south,reversed=false": {
+      "model": "elevators_escalators:block/escalator",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=south,reversed=true": {
+      "model": "elevators_escalators:block/escalator",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=west,reversed=false": {
+      "model": "elevators_escalators:block/escalator",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=west,reversed=true": {
+      "model": "elevators_escalators:block/escalator",
+      "y": 180,
+      "uvlock": true
+    }
+  }
+}

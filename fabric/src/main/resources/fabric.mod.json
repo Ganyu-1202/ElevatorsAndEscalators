@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "Cross-loader elevator platform and escalator prototype. Experimental development build.",
+  "license": "LGPL-3.0-only",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "org.firefly.elevators_escalators.fabric.ElevatorsEscalatorsFabric"
+    ],
+    "client": [
+      "org.firefly.elevators_escalators.fabric.ElevatorsEscalatorsFabricClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "fabric-api": "*",
+    "architectury": ">=13.0.8",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21"
+  },
+  "mixins": [
+    "elevators_escalators.mixins.json"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "elevators_escalators:elevator_controller",
+    "elevators_escalators:escalator",
+    "elevators_escalators:shaft_frame"
+  ]
+}
