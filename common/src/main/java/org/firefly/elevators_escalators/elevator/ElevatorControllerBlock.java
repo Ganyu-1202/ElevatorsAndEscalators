@@ -15,6 +15,9 @@ public final class ElevatorControllerBlock extends BaseEntityBlock {
     public static final MapCodec<ElevatorControllerBlock> CODEC = simpleCodec(ElevatorControllerBlock::new);
     public ElevatorControllerBlock(Properties properties) { super(properties); }
     @Override protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
+    @Override public <T extends net.minecraft.world.level.block.entity.BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(Level level,BlockState state,net.minecraft.world.level.block.entity.BlockEntityType<T> type){
+        return level.isClientSide?null:createTickerHelper(type,org.firefly.elevators_escalators.ModContent.CONTROLLER_BE.get(),(l,p,s,be)->be.previewTick());
+    }
     @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new ElevatorControllerBlockEntity(pos, state); }
     @Override protected net.minecraft.world.ItemInteractionResult useItemOn(net.minecraft.world.item.ItemStack stack,BlockState state,Level level,BlockPos pos,Player player,net.minecraft.world.InteractionHand hand,BlockHitResult hit) {

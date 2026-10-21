@@ -39,5 +39,6 @@
   "message.elevators_escalators.auto_shaft_blocked": "无法放置控制器：井道空间或框架位置受阻/越界/无权限：%s。",
   "block.elevators_escalators.cabin": "轿厢方块",
   "message.elevators_escalators.configure_first": "请先右键控制器完成配置。",
-  "message.elevators_escalators.config_locked": "配置已锁定；更改须重新放置控制器。"
+  "message.elevators_escalators.config_locked": "配置已锁定；更改须重新放置控制器。",
+  "block.elevators_escalators.hall_panel": "楼层呼梯面板"
 }

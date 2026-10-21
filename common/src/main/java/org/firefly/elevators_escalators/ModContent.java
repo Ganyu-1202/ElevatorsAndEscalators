@@ -22,6 +22,8 @@ public final class ModContent {
     public static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS=DeferredRegister.create(ID,Registries.MENU);
     public static final RegistrySupplier<net.minecraft.world.inventory.MenuType<ElevatorMenu>> ELEVATOR_MENU=MENUS.register("elevator",() -> dev.architectury.registry.menu.MenuRegistry.ofExtended(ElevatorMenu::new));
     public static final RegistrySupplier<net.minecraft.world.inventory.MenuType<SetupMenu>> SETUP_MENU=MENUS.register("setup",()->dev.architectury.registry.menu.MenuRegistry.ofExtended(SetupMenu::new));
+    public static final RegistrySupplier<HallPanelBlock> HALL=BLOCKS.register("hall_panel",()->new HallPanelBlock(BlockBehaviour.Properties.of().strength(2).noOcclusion()));
+    public static final RegistrySupplier<BlockEntityType<HallPanelBlockEntity>> HALL_BE=BLOCK_ENTITIES.register("hall_panel",()->BlockEntityType.Builder.of(HallPanelBlockEntity::new,HALL.get()).build(null));
     public static final RegistrySupplier<Block> CABIN=BLOCKS.register("cabin",()->new Block(BlockBehaviour.Properties.of().strength(3).noOcclusion()));
     public static final RegistrySupplier<BlockItem> CABIN_ITEM=ITEMS.register("cabin",()->new CabinBlockItem(CABIN.get(),new Item.Properties()));
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(ID, Registries.CREATIVE_MODE_TAB);
