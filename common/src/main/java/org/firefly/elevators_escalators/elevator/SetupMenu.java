@@ -27,11 +27,11 @@ public final class SetupMenu extends AbstractContainerMenu {
     public void submit(String text) {
         if(!stillValid(player) || player.level().isClientSide || text.length()>100) return;
         try {
-            String[] fields=text.split(",",-1); if(fields.length!=6) throw new IllegalArgumentException();
+            String[] fields=text.split(",",-1); if(fields.length!=7) throw new IllegalArgumentException();
             int[] values=java.util.Arrays.stream(fields).mapToInt(Integer::parseInt).toArray();
             if(player.level().getBlockEntity(pos) instanceof ElevatorControllerBlockEntity controller)
-                controller.configure(player,new ElevatorSpec(values[0],values[1],values[2],values[3],values[4],values[5]));
-        } catch(IllegalArgumentException ex) { player.displayClientMessage(Component.literal("请输入六个合法整数 / Enter six valid integers"),false); }
+                controller.configure(player,new ElevatorSpec(values[0],values[1],values[2],values[3],values[4],values[5],values[6]));
+        } catch(IllegalArgumentException ex) { player.displayClientMessage(Component.literal("请输入合法配置参数 / Enter valid settings"),false); }
     }
     @Override public boolean stillValid(Player p) { return !p.isSpectator() && p.distanceToSqr(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5)<=64 && p.level().getBlockEntity(pos) instanceof ElevatorControllerBlockEntity c && !c.configured(); }
     @Override public ItemStack quickMoveStack(Player p,int i) { return ItemStack.EMPTY; }

@@ -10,11 +10,12 @@ public final class Motion {
         double distance = target - current;
         return current + Math.copySign(Math.min(Math.abs(distance), maxStep), distance);
     }
-    public static double approachSpeed(double currentSpeed, double remaining) {
-        if (!Double.isFinite(currentSpeed) || !Double.isFinite(remaining)) throw new IllegalArgumentException("Non-finite motion");
+    public static double approachSpeed(double currentSpeed, double remaining) { return approachSpeed(currentSpeed,remaining,SPEED); }
+    public static double approachSpeed(double currentSpeed,double remaining,double maximumSpeed) {
+        if (!Double.isFinite(currentSpeed) || !Double.isFinite(remaining) || !Double.isFinite(maximumSpeed) || maximumSpeed<=0) throw new IllegalArgumentException("Non-finite motion");
         if (Math.abs(remaining)<1e-6) return 0;
         if (Math.signum(currentSpeed)!=Math.signum(remaining)) currentSpeed=0;
-        double desired=Math.copySign(Math.min(SPEED,Math.sqrt(2*0.01*Math.abs(remaining))),remaining);
+        double desired=Math.copySign(Math.min(maximumSpeed,Math.sqrt(2*0.01*Math.abs(remaining))),remaining);
         return currentSpeed+Math.max(-0.01,Math.min(0.01,desired-currentSpeed));
     }
     public static boolean validHeight(int height) { return height >= 4 && height <= 32; }

@@ -1,6 +1,9 @@
 package org.firefly.elevators_escalators.elevator;
 
-public record ElevatorSpec(int width,int length,int cabinHeight,int minFloor,int maxFloor,int spacing) {
+public record ElevatorSpec(int width,int length,int cabinHeight,int minFloor,int maxFloor,int spacing,int speedHundredths) {
+    public ElevatorSpec(int width,int length,int cabinHeight,int minFloor,int maxFloor,int spacing) {
+        this(width,length,cabinHeight,minFloor,maxFloor,spacing,200);
+    }
     public static ElevatorSpec defaults() { return new ElevatorSpec(3,3,4,1,3,4); }
     public int count() {
         long n=(long)maxFloor-minFloor+1-(minFloor<0 && maxFloor>0?1:0);
@@ -10,6 +13,7 @@ public record ElevatorSpec(int width,int length,int cabinHeight,int minFloor,int
         if(width<limits.minSize || length<limits.minSize || cabinHeight<limits.minSize || width>limits.maxSize || length>limits.maxSize || cabinHeight>limits.maxSize) return "轿厢尺寸超出服务器限制 / Cabin size out of bounds";
         if(minFloor==0 || maxFloor==0 || minFloor>maxFloor || minFloor< -32767 || maxFloor>32767) return "楼层范围不合法（不能以0层为端点，编号范围±32767） / Invalid floor labels";
         if(count()<1 || count()>limits.maxFloors) return "楼层数量超出服务器限制 / Too many floors";
+        if(!ElevatorSpeed.valid(speedHundredths)) return "速度须为0.5至8格/秒 / Invalid speed";
         if(spacing<cabinHeight || spacing>256) return "层间距不能小于轿厢高度，且不得超过256格 / Spacing must be >= cabin height and <= 256";
         return null;
     }
