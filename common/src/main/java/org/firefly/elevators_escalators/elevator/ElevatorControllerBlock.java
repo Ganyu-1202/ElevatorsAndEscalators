@@ -18,7 +18,7 @@ public final class ElevatorControllerBlock extends BaseEntityBlock {
     @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new ElevatorControllerBlockEntity(pos, state); }
     @Override protected net.minecraft.world.ItemInteractionResult useItemOn(net.minecraft.world.item.ItemStack stack,BlockState state,Level level,BlockPos pos,Player player,net.minecraft.world.InteractionHand hand,BlockHitResult hit) {
-        if (stack.getItem() instanceof ShaftFrameItem || stack.getItem() instanceof ElevatorRemoteItem)
+        if (stack.getItem() instanceof CabinBlockItem || stack.getItem() instanceof ShaftFrameItem || stack.getItem() instanceof ElevatorRemoteItem)
             return net.minecraft.world.ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
@@ -29,16 +29,11 @@ public final class ElevatorControllerBlock extends BaseEntityBlock {
                 var look=player.getLookAngle();
                 controller.setFacing(CabinGeometry.facingTowards(look.x,look.z));
             }
-            if(!AutomaticShaft.rebuild(controller,controller.height(),controller.floors())) {
-                // A concurrent placement callback may obstruct after preflight. Roll back
-                // this new controller; return its item instead of leaving half a structure.
-                level.removeBlock(pos,false);
-                if(placer instanceof Player player && !player.getAbilities().instabuild) stack.grow(1);
-            }
+
         }
     }
     @Override protected void onRemove(BlockState state,Level level,BlockPos pos,BlockState next,boolean moving) {
-        if(!state.is(next.getBlock()) && !level.isClientSide && level.getBlockEntity(pos) instanceof ElevatorControllerBlockEntity controller) AutomaticShaft.remove(controller);
+        if(!state.is(next.getBlock()) && !level.isClientSide && level.getBlockEntity(pos) instanceof ElevatorControllerBlockEntity controller) controller.removeCabin();
         super.onRemove(state,level,pos,next,moving);
     }
     @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {

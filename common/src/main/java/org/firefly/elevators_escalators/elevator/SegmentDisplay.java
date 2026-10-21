@@ -8,5 +8,5 @@ public final class SegmentDisplay {
         if(value<0 || value>9) throw new IllegalArgumentException("Not a decimal digit");
         return DIGITS[value];
     }
-    public static String floor(int number) { return Integer.toString(Math.max(1,Math.min(16,number))); }
+    public static String floor(int number) { return Integer.toString(Math.max(-32767,Math.min(32767,number))); }
 }

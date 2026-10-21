@@ -36,5 +36,8 @@
   "message.elevators_escalators.shaft_exists": "井道框架已经完整，无需重复施工。",
   "message.elevators_escalators.shaft_materials": "需要 %s 个框架，背包与副手共 %s 个。未开始施工。",
   "message.elevators_escalators.shaft_built": "井道框架已放置 %s / %s 个。南侧入口保留。",
-  "message.elevators_escalators.auto_shaft_blocked": "无法放置控制器：井道空间或框架位置受阻/越界/无权限：%s。"
+  "message.elevators_escalators.auto_shaft_blocked": "无法放置控制器：井道空间或框架位置受阻/越界/无权限：%s。",
+  "block.elevators_escalators.cabin": "轿厢方块",
+  "message.elevators_escalators.configure_first": "请先右键控制器完成配置。",
+  "message.elevators_escalators.config_locked": "配置已锁定；更改须重新放置控制器。"
 }

@@ -21,6 +21,9 @@ public final class ModContent {
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ID, Registries.ENTITY_TYPE);
     public static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS=DeferredRegister.create(ID,Registries.MENU);
     public static final RegistrySupplier<net.minecraft.world.inventory.MenuType<ElevatorMenu>> ELEVATOR_MENU=MENUS.register("elevator",() -> dev.architectury.registry.menu.MenuRegistry.ofExtended(ElevatorMenu::new));
+    public static final RegistrySupplier<net.minecraft.world.inventory.MenuType<SetupMenu>> SETUP_MENU=MENUS.register("setup",()->dev.architectury.registry.menu.MenuRegistry.ofExtended(SetupMenu::new));
+    public static final RegistrySupplier<Block> CABIN=BLOCKS.register("cabin",()->new Block(BlockBehaviour.Properties.of().strength(3).noOcclusion()));
+    public static final RegistrySupplier<BlockItem> CABIN_ITEM=ITEMS.register("cabin",()->new CabinBlockItem(CABIN.get(),new Item.Properties()));
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(ID, Registries.CREATIVE_MODE_TAB);
     public static final RegistrySupplier<ElevatorControllerBlock> CONTROLLER = BLOCKS.register("elevator_controller", () -> new ElevatorControllerBlock(BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops()));
     public static final RegistrySupplier<ShaftFrameBlock> FRAME = BLOCKS.register("shaft_frame", () -> new ShaftFrameBlock(BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops().noOcclusion()));
@@ -35,6 +38,7 @@ public final class ModContent {
     public static final RegistrySupplier<CreativeModeTab> TAB = TABS.register("transport", () -> CreativeTabRegistry.create(b -> b.title(Component.translatable("itemGroup.elevators_escalators")).icon(() -> new ItemStack(CONTROLLER_ITEM.get())).displayItems((parameters, output) -> {
         output.accept(CONTROLLER_ITEM.get());
         output.accept(FRAME_ITEM.get());
+        output.accept(CABIN_ITEM.get());
         output.accept(ESCALATOR_ITEM.get());
         output.accept(REMOTE.get());
     })));

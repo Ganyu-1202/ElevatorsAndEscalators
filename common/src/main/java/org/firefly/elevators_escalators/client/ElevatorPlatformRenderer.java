@@ -22,8 +22,11 @@ public final class ElevatorPlatformRenderer extends EntityRenderer<ElevatorPlatf
         part(block,b.x1(),b.y1(),b.z1(),b.x2()-b.x1(),b.y2()-b.y1(),b.z2()-b.z1(),pose,buffers,light);
     }
     @Override public void render(ElevatorPlatformEntity entity,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light) {
-        for(int x=-1;x<=1;x++) for(int z=-1;z<=1;z++)
-            part(Blocks.IRON_BLOCK,x-.5,0,z-.5,1,.25,1,pose,buffers,light);
+        pose.pushPose();
+        var spec=entity.cabinSpec();
+        boolean swap=entity.facing().getAxis()==net.minecraft.core.Direction.Axis.X;
+        pose.scale((float)(swap?spec.sz():spec.sx()),(float)spec.sy(),(float)(swap?spec.sx():spec.sz()));
+        box(Blocks.IRON_BLOCK,new CabinGeometry.Box(-1.5,0,-1.5,1.5,.25,1.5),pose,buffers,light);
         var facing=entity.facing();
         for(var b:CabinGeometry.shell(entity.doorsClosed(),facing))
             box(b.y1()>=3?Blocks.IRON_BLOCK:Blocks.GLASS,b,pose,buffers,light);
@@ -33,6 +36,7 @@ public final class ElevatorPlatformRenderer extends EntityRenderer<ElevatorPlatf
         box(Blocks.BLACK_CONCRETE,DisplayGeometry.housing(facing),pose,buffers,0xF000F0);
         for(var segment:DisplayGeometry.glyphs(entity.currentFloor(),entity.travelDirection(),facing))
             box(Blocks.LIME_CONCRETE,segment,pose,buffers,0xF000F0);
+        pose.popPose();
         super.render(entity,yaw,partial,pose,buffers,light);
     }
 }

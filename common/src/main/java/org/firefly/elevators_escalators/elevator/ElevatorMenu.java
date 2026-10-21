@@ -13,15 +13,16 @@ import org.firefly.elevators_escalators.ModContent;
 public final class ElevatorMenu extends AbstractContainerMenu {
     private final ElevatorPlatformEntity platform;
     private final int[] floors;
+    private final int[] labels;
     private final ContainerData data;
     public ElevatorMenu(int id,Inventory inventory,FriendlyByteBuf buf) {
-        this(id,inventory,buf.readVarInt(),buf.readVarIntArray(16));
+        this(id,inventory,buf.readVarInt(),buf.readVarIntArray(256),buf.readVarIntArray(256));
     }
-    private ElevatorMenu(int id,Inventory inventory,int entityId,int[] floors) {
+    private ElevatorMenu(int id,Inventory inventory,int entityId,int[] floors,int[] labels) {
         super(ModContent.ELEVATOR_MENU.get(),id);
         var entity=inventory.player.level().getEntity(entityId);
         platform=entity instanceof ElevatorPlatformEntity p?p:null;
-        this.floors=floors;
+        this.floors=floors;this.labels=labels;
         data=inventory.player.level().isClientSide ? new SimpleContainerData(3) : new ContainerData() {
             public int get(int index) { return platform==null?0:switch(index) { case 0 -> platform.currentFloor(); case 1 -> platform.targetOffset(); default -> platform.doorsClosed()?1:0; }; }
             public void set(int index,int value) {}
@@ -29,6 +30,7 @@ public final class ElevatorMenu extends AbstractContainerMenu {
         };
         addDataSlots(data);
     }
+    public int[] labels(){return labels.clone();}
     public int[] floors() { return floors.clone(); }
     public int currentFloor() { return data.get(0); }
     public int target() { return data.get(1); }
@@ -38,16 +40,16 @@ public final class ElevatorMenu extends AbstractContainerMenu {
         if (!(platform.level().getBlockEntity(platform.controllerPos()) instanceof ElevatorControllerBlockEntity be)) return;
         platform.controlActivity();
         int[] floors=be.floors();
-        MenuRegistry.openExtendedMenu(server,new SimpleMenuProvider((id,inv,p) -> new ElevatorMenu(id,inv,platform.getId(),floors),Component.translatable("screen.elevators_escalators.title")),buf -> {
-            buf.writeVarInt(platform.getId()); buf.writeVarIntArray(floors);
+        MenuRegistry.openExtendedMenu(server,new SimpleMenuProvider((id,inv,p) -> new ElevatorMenu(id,inv,platform.getId(),floors,be.labels()),Component.translatable("screen.elevators_escalators.title")),buf -> {
+            buf.writeVarInt(platform.getId()); buf.writeVarIntArray(floors);buf.writeVarIntArray(be.labels());
         });
     }
-    @Override public boolean stillValid(Player player) { return platform!=null && platform.isAlive() && !player.isSpectator() && player.level()==platform.level() && player.distanceToSqr(platform)<=64*64; }
+    @Override public boolean stillValid(Player player) { return platform!=null && platform.isAlive() && !player.isSpectator() && player.level()==platform.level() && platform.getBoundingBox().expandTowards(0,platform.cabinSpec().cabinHeight(),0).inflate(64).contains(player.position()); }
     @Override public boolean clickMenuButton(Player player,int button) {
         if (!stillValid(player) || player.level().isClientSide) return false;
         platform.controlActivity();
         if (button>=0 && button<floors.length) { platform.requestFloor(player,floors[button]); return true; }
-        if (button==100 || button==101) return platform.manualDoor(player,button==101);
+        if (button==1000 || button==1001) return platform.manualDoor(player,button==1001);
         return false;
     }
     @Override public ItemStack quickMoveStack(Player player,int index) { return ItemStack.EMPTY; }

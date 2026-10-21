@@ -21,7 +21,7 @@ public abstract class CabinCollisionMixin {
         if (entity==null || entity instanceof ElevatorPlatformEntity) return original;
         AABB sweep=box.inflate(1.0e-6);
         List<VoxelShape> result=null;
-        for (var platform:level.getEntitiesOfClass(ElevatorPlatformEntity.class,sweep.inflate(0.5,3.25,0.5))) {
+        for (var platform:level.getEntitiesOfClass(ElevatorPlatformEntity.class,sweep.inflate(32.5,64,32.5))) {
             if (!platform.canBeCollidedWith()) continue;
             for (VoxelShape shape:platform.cabinShapes()) {
                 if (shape.bounds().intersects(sweep)) {

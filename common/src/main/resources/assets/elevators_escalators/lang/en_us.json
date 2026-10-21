@@ -36,5 +36,8 @@
   "message.elevators_escalators.shaft_exists": "Shaft frame already complete.",
   "message.elevators_escalators.shaft_materials": "Need %s frames; inventory and offhand contain %s. Construction not started.",
   "message.elevators_escalators.shaft_built": "Placed %s / %s shaft frames. South entrances remain open.",
-  "message.elevators_escalators.auto_shaft_blocked": "Controller placement denied: shaft/frame obstructed, out of bounds or not permitted at %s."
+  "message.elevators_escalators.auto_shaft_blocked": "Controller placement denied: shaft/frame obstructed, out of bounds or not permitted at %s.",
+  "block.elevators_escalators.cabin": "Cabin Block",
+  "message.elevators_escalators.configure_first": "Configure the controller first.",
+  "message.elevators_escalators.config_locked": "Configuration locked; replace the controller to change."
 }

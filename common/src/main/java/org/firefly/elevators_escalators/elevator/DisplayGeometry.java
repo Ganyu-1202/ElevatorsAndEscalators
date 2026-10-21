@@ -21,20 +21,21 @@ public final class DisplayGeometry {
             {.02,0,.10,.018},{0,.02,.018,.11},{0,.13,.018,.11},{.02,.12,.10,.018}};
         String number=SegmentDisplay.floor(floor);
         for(int i=0;i<number.length();i++) {
-            int mask=SegmentDisplay.digit(number.charAt(i)-'0');
+            int mask=number.charAt(i)=='-'?64:SegmentDisplay.digit(number.charAt(i)-'0');
             for(int j=0;j<7;j++) if((mask&(1<<j))!=0) {
                 double[] b=bars[j];
-                result.add(segment(-.26+i*.17+b[0]+b[2]/2,2.15+b[1],b[2],b[3],facing));
+                result.add(segment(-.26+i*.17+b[0]+b[2]/2,2.15+b[1],b[2],b[3],Direction.SOUTH));
             }
         }
-        result.add(segment(.12,2.15,.018,.258,facing));
-        result.add(segment(.175,2.39,.11,.018,facing));
-        result.add(segment(.165,2.27,.09,.018,facing));
+        result.add(segment(.12,2.15,.018,.258,Direction.SOUTH));
+        result.add(segment(.175,2.39,.11,.018,Direction.SOUTH));
+        result.add(segment(.165,2.27,.09,.018,Direction.SOUTH));
         if(direction!=0) for(int i=0;i<3;i++) {
             double y=direction>0?2.34-i*.035:2.21+i*.035;
-            result.add(segment(.30-i*.025,y,.025,.025,facing));
-            result.add(segment(.30+i*.025,y,.025,.025,facing));
+            result.add(segment(.30-i*.025,y,.025,.025,Direction.SOUTH));
+            result.add(segment(.30+i*.025,y,.025,.025,Direction.SOUTH));
         }
-        return List.copyOf(result);
+        double factor=number.length()>2?2.0/number.length():1;
+        return result.stream().map(b->CabinGeometry.rotate(new CabinGeometry.Box(b.x1()*factor,b.y1(),b.z1(),b.x2()*factor,b.y2(),b.z2()),facing)).toList();
     }
 }

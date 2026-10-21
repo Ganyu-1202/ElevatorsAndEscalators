@@ -33,7 +33,8 @@ public final class ElevatorPlatformEntity extends Entity {
     private boolean doorwayOccupied() {
         var a=facing();
         // Doorway spans the local front edge and just outside it; rotation keeps it consistent.
-        var door=new AABB(-1.1,.25,1.1,1.1,3,1.8);
+        var cs=cabinSpec();
+        var door=new AABB(-1.1*cs.sx(),.25*cs.sy(),1.1*cs.sz(),1.1*cs.sx(),3*cs.sy(),1.8*cs.sz());
         var rotated=CabinGeometry.rotate(new CabinGeometry.Box(door.minX,door.minY,door.minZ,door.maxX,door.maxY,door.maxZ),a);
         return !level().getEntities(this,new AABB(getX()+rotated.x1(),getY()+rotated.y1(),getZ()+rotated.z1(),
             getX()+rotated.x2(),getY()+rotated.y2(),getZ()+rotated.z2()),e -> e instanceof LivingEntity && !e.isSpectator()).isEmpty();
@@ -42,15 +43,29 @@ public final class ElevatorPlatformEntity extends Entity {
     private int doorTicks;
     public boolean doorsClosed() { return entityData.get(CLOSED); }
     public java.util.List<net.minecraft.world.phys.shapes.VoxelShape> cabinShapes() {
-        return CabinGeometry.shell(doorsClosed(),facing()).stream().map(b -> net.minecraft.world.phys.shapes.Shapes.create(
+        return CabinGeometry.shell(doorsClosed()).stream().map(cabinSpec()::scale).map(b -> CabinGeometry.rotate(b,facing())).toList().stream().map(b -> net.minecraft.world.phys.shapes.Shapes.create(
             new AABB(b.x1()+getX(),b.y1()+getY(),b.z1()+getZ(),b.x2()+getX(),b.y2()+getY(),b.z2()+getZ()))).toList();
     }
-    @Override public AABB getBoundingBoxForCulling() { return getBoundingBox().expandTowards(0,CabinGeometry.TOP,0); }
+    @Override public AABB getBoundingBoxForCulling() { return getBoundingBox().expandTowards(0,cabinSpec().cabinHeight(),0); }
     private static final EntityDataAccessor<Integer> TARGET = SynchedEntityData.defineId(ElevatorPlatformEntity.class,EntityDataSerializers.INT);
     public int targetOffset() { return entityData.get(TARGET); }
     private static final EntityDataAccessor<Integer> FACING=SynchedEntityData.defineId(ElevatorPlatformEntity.class,EntityDataSerializers.INT);
     public net.minecraft.core.Direction facing() { return CabinGeometry.facing(entityData.get(FACING)); }
     public void setFacing(net.minecraft.core.Direction direction) { entityData.set(FACING,direction.get2DDataValue()); }
+    private static final EntityDataAccessor<Integer> WIDTH=SynchedEntityData.defineId(ElevatorPlatformEntity.class,EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> LENGTH=SynchedEntityData.defineId(ElevatorPlatformEntity.class,EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> CABIN_HEIGHT=SynchedEntityData.defineId(ElevatorPlatformEntity.class,EntityDataSerializers.INT);
+    private int[] floorLabels={1,2,3};
+    public ElevatorSpec cabinSpec(){return new ElevatorSpec(entityData.get(WIDTH),entityData.get(LENGTH),entityData.get(CABIN_HEIGHT),1,1,1);}
+    public int[] floorLabels(){return floorLabels.clone();}
+    public void applySpec(ElevatorSpec spec,int[] labels){entityData.set(WIDTH,spec.width());entityData.set(LENGTH,spec.length());entityData.set(CABIN_HEIGHT,spec.cabinHeight());floorLabels=labels.clone();refreshDimensions();setBoundingBox(makeBoundingBox());}
+    public double deckTop(){return getY()+cabinSpec().deckThickness();}
+    @Override protected AABB makeBoundingBox(){
+        if(entityData==null)return super.makeBoundingBox();
+        var spec=cabinSpec(); var local=CabinGeometry.rotate(new CabinGeometry.Box(-spec.width()/2.,0,-spec.length()/2.,spec.width()/2.,spec.deckThickness(),spec.length()/2.),facing());
+        return new AABB(getX()+local.x1(),getY(),getZ()+local.z1(),getX()+local.x2(),getY()+local.y2(),getZ()+local.z2());
+    }
+    @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(key==WIDTH||key==LENGTH||key==CABIN_HEIGHT||key==FACING)setBoundingBox(makeBoundingBox());}
     private BlockPos controller = BlockPos.ZERO;
     private int height = 8;
     private double lerpX, lerpY, lerpZ;
@@ -74,8 +89,8 @@ public final class ElevatorPlatformEntity extends Entity {
     }
     private void remember(Player player) {
         riderOffsets.put(player.getUUID(), new Vec3(
-            net.minecraft.util.Mth.clamp(player.getX()-getX(),-1.35,1.35), 0,
-            net.minecraft.util.Mth.clamp(player.getZ()-getZ(),-1.35,1.35)));
+            net.minecraft.util.Mth.clamp(player.getX()-getX(),-getBoundingBox().getXsize()/2+.1,getBoundingBox().getXsize()/2-.1), 0,
+            net.minecraft.util.Mth.clamp(player.getZ()-getZ(),-getBoundingBox().getZsize()/2+.1,getBoundingBox().getZsize()/2-.1)));
     }
     private void restoreRiders() {
         if (!(level() instanceof net.minecraft.server.level.ServerLevel server)) return;
@@ -86,7 +101,7 @@ public final class ElevatorPlatformEntity extends Entity {
             if (player==null) continue;
             Vec3 offset=riderOffsets.getOrDefault(id,Vec3.ZERO);
             // Never retrieve someone who changed dimension or left this shaft.
-            if (player.level()!=level() || player.distanceToSqr(getX(),getY(),getZ())>16*16) {
+            if (player.level()!=level() || player.distanceToSqr(getX(),getY(),getZ())>Math.pow(Math.max(16,Math.max(cabinSpec().width(),cabinSpec().length())),2)) {
                 iterator.remove(); riderOffsets.remove(id); continue;
             }
             double top=getBoundingBox().maxY;
@@ -104,7 +119,7 @@ public final class ElevatorPlatformEntity extends Entity {
         }
         waitingForRiders=!savedRiders.isEmpty();
     }
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { builder.define(UP, false); builder.define(TARGET,0); builder.define(CLOSED,false); builder.define(CURRENT_FLOOR,1); builder.define(DIRECTION,0); builder.define(FACING,0); }
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { builder.define(UP, false); builder.define(TARGET,0); builder.define(CLOSED,false); builder.define(CURRENT_FLOOR,1); builder.define(DIRECTION,0); builder.define(FACING,0); builder.define(WIDTH,3); builder.define(LENGTH,3); builder.define(CABIN_HEIGHT,4); }
     @Override public boolean isPickable() { return true; }
     @Override public boolean canBeCollidedWith() { return !isRemoved() && !noPhysics; }
     @Override public boolean isPushable() { return false; }
@@ -171,7 +186,8 @@ public final class ElevatorPlatformEntity extends Entity {
                 remember((Player)e);
             }
             int[] stops=be.floors();
-            entityData.set(CURRENT_FLOOR,FloorDisplay.number(stops,getY()-controller.getY()-1));
+            int floorIndex=Math.min(be.labels().length-1,FloorDisplay.number(stops,getY()-controller.getY()-1)-1);
+            entityData.set(CURRENT_FLOOR,be.labels()[floorIndex]);
             double target=controller.getY()+1+targetOffset();
             entityData.set(DIRECTION,Math.abs(target-getY())<1e-6?0:(target>getY()?1:-1));
             if (Math.abs(target-getY())<1e-6) {
@@ -187,7 +203,7 @@ public final class ElevatorPlatformEntity extends Entity {
             speed=Motion.approachSpeed(speed,target-getY());
             nextY=Motion.step(getY(),target,Math.max(0.001,Math.abs(speed)));
             double dy=nextY-getY();
-            if (Math.abs(dy)>1e-6 && !clear(level(),oldBox.expandTowards(0,dy,0).expandTowards(0,CabinGeometry.TOP-.25,0).deflate(1e-4))) return;
+            if (Math.abs(dy)>1e-6 && !clear(level(),oldBox.expandTowards(0,dy,0).expandTowards(0,cabinSpec().cabinHeight()-cabinSpec().deckThickness(),0).deflate(1e-4))) return;
         }
         double dy=nextY-getY();
         if (Math.abs(dy)>1e-8) {
@@ -210,7 +226,7 @@ public final class ElevatorPlatformEntity extends Entity {
         setPos(nextX,nextY,nextZ);
     }
     @Override public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps) { lerpX=x; lerpY=y; lerpZ=z; lerpSteps=Math.max(1,steps); }
-    @Override protected void addAdditionalSaveData(CompoundTag tag) { tag.putLong("Controller",controller.asLong()); tag.putInt("Height",height); tag.putBoolean("Up",isGoingUp()); tag.putInt("TargetOffset",targetOffset()); tag.putInt("Facing",entityData.get(FACING));
+    @Override protected void addAdditionalSaveData(CompoundTag tag) { tag.putLong("Controller",controller.asLong()); tag.putInt("Height",height); tag.putBoolean("Up",isGoingUp()); tag.putInt("TargetOffset",targetOffset()); tag.putInt("Facing",entityData.get(FACING)); tag.putIntArray("CabinSize",new int[]{cabinSpec().width(),cabinSpec().length(),cabinSpec().cabinHeight()});tag.putIntArray("FloorLabels",floorLabels);
         net.minecraft.nbt.ListTag riders=new net.minecraft.nbt.ListTag();
         java.util.Set<java.util.UUID> ids=new java.util.HashSet<>(riderOffsets.keySet()); ids.addAll(savedRiders);
         for (java.util.UUID id:ids) riders.add(net.minecraft.nbt.StringTag.valueOf(id.toString()));
@@ -222,8 +238,10 @@ public final class ElevatorPlatformEntity extends Entity {
         }
         tag.put("RiderOffsets",offsets);
     }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) { controller=BlockPos.of(tag.getLong("Controller")); int h=tag.getInt("Height"); height=Motion.validHeight(h)?h:8; entityData.set(UP,tag.getBoolean("Up")); entityData.set(TARGET,tag.contains("TargetOffset")?net.minecraft.util.Mth.clamp(tag.getInt("TargetOffset"),0,height):(isGoingUp()?height:0));
+    @Override protected void readAdditionalSaveData(CompoundTag tag) { controller=BlockPos.of(tag.getLong("Controller")); int h=tag.getInt("Height"); height=Math.max(0,Math.min(65280,h)); entityData.set(UP,tag.getBoolean("Up")); entityData.set(TARGET,tag.contains("TargetOffset")?net.minecraft.util.Mth.clamp(tag.getInt("TargetOffset"),0,height):(isGoingUp()?height:0));
         entityData.set(FACING,tag.contains("Facing")?Math.floorMod(tag.getInt("Facing"),4):0);
+        int[] size=tag.getIntArray("CabinSize");
+        if(size.length==3 && java.util.Arrays.stream(size).allMatch(v->v>=1&&v<=64))applySpec(new ElevatorSpec(size[0],size[1],size[2],1,1,1),tag.getIntArray("FloorLabels"));
         savedRiders.clear();
         for (net.minecraft.nbt.Tag rider:tag.getList("Riders",8)) {
             try { savedRiders.add(java.util.UUID.fromString(rider.getAsString())); }
@@ -234,7 +252,7 @@ public final class ElevatorPlatformEntity extends Entity {
             CompoundTag item=(CompoundTag)value;
             if (!item.hasUUID("Player")) continue;
             double x=item.getDouble("X"), z=item.getDouble("Z");
-            if (Double.isFinite(x) && Double.isFinite(z) && Math.abs(x)<=1.35 && Math.abs(z)<=1.35)
+            if (Double.isFinite(x) && Double.isFinite(z) && Math.abs(x)<=32 && Math.abs(z)<=32)
                 riderOffsets.put(item.getUUID("Player"),new Vec3(x,0,z));
         }
         savedRiders.addAll(riderOffsets.keySet());
