@@ -13,6 +13,7 @@ public final class ElevatorsEscalators {
     public static void init() {
         org.firefly.elevators_escalators.elevator.ElevatorLimits.load();
         ModContent.init();
+        org.firefly.elevators_escalators.escalator.EscalatorPayload.register();
         org.firefly.elevators_escalators.elevator.SetupPayload.register();
         org.firefly.elevators_escalators.elevator.ControlPayload.register();
         dev.architectury.event.events.common.PlayerEvent.PLAYER_QUIT.register(player -> {

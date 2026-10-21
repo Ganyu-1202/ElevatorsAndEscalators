@@ -1,42 +1,162 @@
 {
   "variants": {
-    "facing=north,reversed=false": {
+    "facing=north,reversed=false,assembled=false,rising=false": {
+      "model": "elevators_escalators:block/escalator_flat",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=north,reversed=false,assembled=false,rising=true": {
       "model": "elevators_escalators:block/escalator",
       "y": 270,
       "uvlock": true
     },
-    "facing=north,reversed=true": {
+    "facing=north,reversed=false,assembled=true,rising=false": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=north,reversed=false,assembled=true,rising=true": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=north,reversed=true,assembled=false,rising=false": {
+      "model": "elevators_escalators:block/escalator_flat",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=north,reversed=true,assembled=false,rising=true": {
       "model": "elevators_escalators:block/escalator",
       "y": 270,
       "uvlock": true
     },
-    "facing=east,reversed=false": {
+    "facing=north,reversed=true,assembled=true,rising=false": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=north,reversed=true,assembled=true,rising=true": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=east,reversed=false,assembled=false,rising=false": {
+      "model": "elevators_escalators:block/escalator_flat",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=east,reversed=false,assembled=false,rising=true": {
       "model": "elevators_escalators:block/escalator",
       "y": 0,
       "uvlock": true
     },
-    "facing=east,reversed=true": {
+    "facing=east,reversed=false,assembled=true,rising=false": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=east,reversed=false,assembled=true,rising=true": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=east,reversed=true,assembled=false,rising=false": {
+      "model": "elevators_escalators:block/escalator_flat",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=east,reversed=true,assembled=false,rising=true": {
       "model": "elevators_escalators:block/escalator",
       "y": 0,
       "uvlock": true
     },
-    "facing=south,reversed=false": {
+    "facing=east,reversed=true,assembled=true,rising=false": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=east,reversed=true,assembled=true,rising=true": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=south,reversed=false,assembled=false,rising=false": {
+      "model": "elevators_escalators:block/escalator_flat",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=south,reversed=false,assembled=false,rising=true": {
       "model": "elevators_escalators:block/escalator",
       "y": 90,
       "uvlock": true
     },
-    "facing=south,reversed=true": {
+    "facing=south,reversed=false,assembled=true,rising=false": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=south,reversed=false,assembled=true,rising=true": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=south,reversed=true,assembled=false,rising=false": {
+      "model": "elevators_escalators:block/escalator_flat",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=south,reversed=true,assembled=false,rising=true": {
       "model": "elevators_escalators:block/escalator",
       "y": 90,
       "uvlock": true
     },
-    "facing=west,reversed=false": {
+    "facing=south,reversed=true,assembled=true,rising=false": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=south,reversed=true,assembled=true,rising=true": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=west,reversed=false,assembled=false,rising=false": {
+      "model": "elevators_escalators:block/escalator_flat",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=west,reversed=false,assembled=false,rising=true": {
       "model": "elevators_escalators:block/escalator",
       "y": 180,
       "uvlock": true
     },
-    "facing=west,reversed=true": {
+    "facing=west,reversed=false,assembled=true,rising=false": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=west,reversed=false,assembled=true,rising=true": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=west,reversed=true,assembled=false,rising=false": {
+      "model": "elevators_escalators:block/escalator_flat",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=west,reversed=true,assembled=false,rising=true": {
       "model": "elevators_escalators:block/escalator",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=west,reversed=true,assembled=true,rising=false": {
+      "model": "elevators_escalators:block/escalator_conveyor",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=west,reversed=true,assembled=true,rising=true": {
+      "model": "elevators_escalators:block/escalator_conveyor",
       "y": 180,
       "uvlock": true
     }

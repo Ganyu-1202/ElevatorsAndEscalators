@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "elevators_escalators:block/escalator_controller"
+    }
+  }
+}

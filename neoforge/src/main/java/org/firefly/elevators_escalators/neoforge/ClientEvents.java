@@ -12,6 +12,7 @@ import org.firefly.elevators_escalators.client.ElevatorPlatformRenderer;
 public final class ClientEvents {
     @SubscribeEvent
     public static void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+        event.register(ModContent.ESC_MENU.get(),org.firefly.elevators_escalators.client.EscalatorScreen::new);
         event.register(ModContent.ELEVATOR_MENU.get(),org.firefly.elevators_escalators.client.ElevatorScreen::new);
         event.register(ModContent.SETUP_MENU.get(),org.firefly.elevators_escalators.client.SetupScreen::new);
     }

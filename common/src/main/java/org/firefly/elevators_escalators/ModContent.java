@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.firefly.elevators_escalators.elevator.*;
-import org.firefly.elevators_escalators.escalator.EscalatorBlock;
+import org.firefly.elevators_escalators.escalator.*;
 
 public final class ModContent {
     private static final String ID = ElevatorsEscalators.MOD_ID;
@@ -26,11 +26,17 @@ public final class ModContent {
     public static final RegistrySupplier<BlockEntityType<HallPanelBlockEntity>> HALL_BE=BLOCK_ENTITIES.register("hall_panel",()->BlockEntityType.Builder.of(HallPanelBlockEntity::new,HALL.get()).build(null));
     public static final RegistrySupplier<Block> CABIN=BLOCKS.register("cabin",()->new Block(BlockBehaviour.Properties.of().strength(3).noOcclusion()));
     public static final RegistrySupplier<BlockItem> CABIN_ITEM=ITEMS.register("cabin",()->new CabinBlockItem(CABIN.get(),new Item.Properties()));
+    public static final RegistrySupplier<EscalatorControllerBlock> ESC_CONTROLLER=BLOCKS.register("escalator_controller",()->new EscalatorControllerBlock(BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops()));
+    public static final RegistrySupplier<BlockItem> ESC_CONTROLLER_ITEM=ITEMS.register("escalator_controller",()->new BlockItem(ESC_CONTROLLER.get(),new Item.Properties()));
+    public static final RegistrySupplier<Item> ESC_SURVEY=ITEMS.register("escalator_survey",()->new EscalatorSurveyItem(new Item.Properties().stacksTo(1)));
+    public static final RegistrySupplier<net.minecraft.world.inventory.MenuType<EscalatorMenu>> ESC_MENU=MENUS.register("escalator",()->dev.architectury.registry.menu.MenuRegistry.ofExtended(EscalatorMenu::new));
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(ID, Registries.CREATIVE_MODE_TAB);
     public static final RegistrySupplier<ElevatorControllerBlock> CONTROLLER = BLOCKS.register("elevator_controller", () -> new ElevatorControllerBlock(BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops()));
     public static final RegistrySupplier<ShaftFrameBlock> FRAME = BLOCKS.register("shaft_frame", () -> new ShaftFrameBlock(BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistrySupplier<BlockItem> FRAME_ITEM = ITEMS.register("shaft_frame", () -> new ShaftFrameItem(FRAME.get(),new Item.Properties()));
     public static final RegistrySupplier<EscalatorBlock> ESCALATOR = BLOCKS.register("escalator", () -> new EscalatorBlock(BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops()));
+    public static final RegistrySupplier<BlockEntityType<EscalatorControllerBlockEntity>> ESC_CONTROLLER_BE=BLOCK_ENTITIES.register("escalator_controller",()->BlockEntityType.Builder.of(EscalatorControllerBlockEntity::new,ESC_CONTROLLER.get()).build(null));
+    public static final RegistrySupplier<BlockEntityType<EscalatorStepBlockEntity>> ESC_STEP_BE=BLOCK_ENTITIES.register("escalator_step",()->BlockEntityType.Builder.of(EscalatorStepBlockEntity::new,ESCALATOR.get()).build(null));
     public static final RegistrySupplier<BlockEntityType<ElevatorControllerBlockEntity>> CONTROLLER_BE = BLOCK_ENTITIES.register("elevator_controller", () -> BlockEntityType.Builder.of(ElevatorControllerBlockEntity::new, CONTROLLER.get()).build(null));
     public static final RegistrySupplier<BlockEntityType<ShaftFrameBlockEntity>> FRAME_BE=BLOCK_ENTITIES.register("shaft_frame",() -> BlockEntityType.Builder.of(ShaftFrameBlockEntity::new,FRAME.get()).build(null));
     public static final RegistrySupplier<EntityType<ElevatorPlatformEntity>> PLATFORM = ENTITIES.register("elevator_platform", () -> EntityType.Builder.<ElevatorPlatformEntity>of(ElevatorPlatformEntity::new, MobCategory.MISC).sized(3F, 0.25F).clientTrackingRange(10).updateInterval(1).fireImmune().build(ID + ":elevator_platform"));
@@ -42,6 +48,8 @@ public final class ModContent {
         output.accept(FRAME_ITEM.get());
         output.accept(CABIN_ITEM.get());
         output.accept(ESCALATOR_ITEM.get());
+        output.accept(ESC_CONTROLLER_ITEM.get());
+        output.accept(ESC_SURVEY.get());
         output.accept(REMOTE.get());
     })));
     public static void init() { BLOCKS.register(); ITEMS.register(); BLOCK_ENTITIES.register(); ENTITIES.register(); MENUS.register(); TABS.register(); }

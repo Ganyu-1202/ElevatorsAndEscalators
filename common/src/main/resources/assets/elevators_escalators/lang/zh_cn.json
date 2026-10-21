@@ -40,5 +40,7 @@
   "block.elevators_escalators.cabin": "轿厢方块",
   "message.elevators_escalators.configure_first": "请先右键控制器完成配置。",
   "message.elevators_escalators.config_locked": "配置已锁定；更改须重新放置控制器。",
-  "block.elevators_escalators.hall_panel": "楼层呼梯面板"
+  "block.elevators_escalators.hall_panel": "楼层呼梯面板",
+  "block.elevators_escalators.escalator_controller": "扶梯起点控制器",
+  "item.elevators_escalators.escalator_survey": "扶梯端点设置工具"
 }
