@@ -23,13 +23,14 @@ public final class ElevatorMenu extends AbstractContainerMenu {
         var entity=inventory.player.level().getEntity(entityId);
         platform=entity instanceof ElevatorPlatformEntity p?p:null;
         this.floors=floors;this.labels=labels;
-        data=inventory.player.level().isClientSide ? new SimpleContainerData(3) : new ContainerData() {
-            public int get(int index) { return platform==null?0:switch(index) { case 0 -> platform.currentFloor(); case 1 -> platform.targetOffset(); default -> platform.doorsClosed()?1:0; }; }
+        data=inventory.player.level().isClientSide ? new SimpleContainerData(3+floors.length) : new ContainerData() {
+            public int get(int index) { if(index>=3)return platform!=null&&platform.requested(floors[index-3])?1:0; return platform==null?0:switch(index) { case 0 -> platform.currentFloor(); case 1 -> platform.targetOffset(); default -> platform.doorsClosed()?1:0; }; }
             public void set(int index,int value) {}
-            public int getCount() { return 3; }
+            public int getCount() { return 3+floors.length; }
         };
         addDataSlots(data);
     }
+    public boolean selected(int index){return index>=0&&index<floors.length&&data.get(index+3)!=0;}
     public int[] labels(){return labels.clone();}
     public int[] floors() { return floors.clone(); }
     public int currentFloor() { return data.get(0); }
@@ -38,7 +39,6 @@ public final class ElevatorMenu extends AbstractContainerMenu {
     public static void open(Player player,ElevatorPlatformEntity platform) {
         if (!(player instanceof ServerPlayer server) || player.isSpectator()) return;
         if (!(platform.level().getBlockEntity(platform.controllerPos()) instanceof ElevatorControllerBlockEntity be)) return;
-        platform.controlActivity();
         int[] floors=be.floors();
         MenuRegistry.openExtendedMenu(server,new SimpleMenuProvider((id,inv,p) -> new ElevatorMenu(id,inv,platform.getId(),floors,be.labels()),Component.translatable("screen.elevators_escalators.title")),buf -> {
             buf.writeVarInt(platform.getId()); buf.writeVarIntArray(floors);buf.writeVarIntArray(be.labels());
@@ -47,7 +47,6 @@ public final class ElevatorMenu extends AbstractContainerMenu {
     @Override public boolean stillValid(Player player) { return platform!=null && platform.isAlive() && !player.isSpectator() && player.level()==platform.level() && platform.getBoundingBox().expandTowards(0,platform.cabinSpec().cabinHeight(),0).inflate(64).contains(player.position()); }
     @Override public boolean clickMenuButton(Player player,int button) {
         if (!stillValid(player) || player.level().isClientSide) return false;
-        platform.controlActivity();
         if (button>=0 && button<floors.length) { platform.requestFloor(player,floors[button]); return true; }
         if (button==1000 || button==1001) return platform.manualDoor(player,button==1001);
         return false;

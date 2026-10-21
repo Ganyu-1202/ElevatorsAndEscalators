@@ -20,14 +20,21 @@ public final class ElevatorPlatformEntity extends Entity {
     public int travelDirection() { return entityData.get(DIRECTION); }
     private final DoorTimer autoDoor=new DoorTimer();
     private boolean arrivalPending;
-    public void controlActivity() { autoDoor.reset(); }
+    private final StopQueue requests=new StopQueue();
+    private int serviceDirection;
+    public boolean requested(int offset){return requests.contains(offset);}
+    private boolean moving(){return arrivalPending && Math.abs(controller.getY()+1+targetOffset()-getY())>1e-6;}
+    private void selectTarget(int offset){
+        entityData.set(TARGET,offset);serviceDirection=Double.compare(controller.getY()+1+offset,getY());
+        entityData.set(UP,serviceDirection>0);arrivalPending=serviceDirection!=0;doorTicks=0;
+    }
     public boolean manualDoor(Player player,boolean close) {
-        controlActivity();
         if (level().isClientSide || player.isSpectator()) return false;
-        if (Math.abs(controller.getY()+1+targetOffset()-getY())>1e-4) {
+        if (moving()) {
             ElevatorControllerBlockEntity.tell(player,"door_moving"); return false;
         }
         if (close && doorwayOccupied()) { ElevatorControllerBlockEntity.tell(player,"door_blocked"); return false; }
+        if(!close)autoDoor.reset();
         entityData.set(CLOSED,close); manualClosed=close; return true;
     }
     private boolean doorwayOccupied() {
@@ -140,9 +147,8 @@ public final class ElevatorPlatformEntity extends Entity {
         if (!(level().getBlockEntity(controller) instanceof ElevatorControllerBlockEntity be)
                 || java.util.Arrays.stream(be.floors()).noneMatch(v->v==offset)) return;
         waitingForRiders=false; savedRiders.clear(); riderOffsets.clear();
-        entityData.set(TARGET,offset); entityData.set(UP,controller.getY()+1+offset>getY());
-        doorTicks=10; manualClosed=false; autoDoor.reset();
-        arrivalPending=Math.abs(controller.getY()+1+offset-getY())>1e-4;
+        // Selecting floors only records requests. It never closes doors or resets their timer.
+        if(Math.abs(controller.getY()+1+offset-getY())>1e-5 || moving())requests.add(offset);
         player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.elevators_escalators.floor_target",offset),true);
     }
     public static boolean clear(Level level, AABB area) {
@@ -200,17 +206,26 @@ public final class ElevatorPlatformEntity extends Entity {
             int[] stops=be.floors();
             int floorIndex=Math.min(be.labels().length-1,FloorDisplay.number(stops,getY()-controller.getY()-1)-1);
             entityData.set(CURRENT_FLOOR,be.labels()[floorIndex]);
+            double position=getY()-controller.getY()-1;
+            if(arrivalPending && Math.abs(position-targetOffset())<1e-6){
+                requests.served(targetOffset());arrivalPending=false;speed=0;
+                entityData.set(CLOSED,false);manualClosed=false;autoDoor.reset();
+            }
+            if(!arrivalPending){
+                // A request for the already occupied floor is satisfied without reopening doors.
+                for(int stop:requests.snapshot())if(Math.abs(stop-position)<1e-6)requests.served(stop);
+                entityData.set(DIRECTION,0);
+                if(autoDoor.tick(!doorsClosed(),doorwayOccupied())){entityData.set(CLOSED,true);manualClosed=true;}
+                Integer next=requests.next(position,serviceDirection);
+                if(next==null || !doorsClosed()){speed=0;return;}
+                if(doorwayOccupied()){entityData.set(CLOSED,false);manualClosed=false;autoDoor.reset();return;}
+                selectTarget(next);
+            }else{
+                Integer intermediate=requests.intercept(position,targetOffset(),speed);
+                if(intermediate!=null)selectTarget(intermediate);
+            }
             double target=controller.getY()+1+targetOffset();
-            entityData.set(DIRECTION,Math.abs(target-getY())<1e-6?0:(target>getY()?1:-1));
-            if (Math.abs(target-getY())<1e-6) {
-                if (arrivalPending) { entityData.set(CLOSED,false); manualClosed=false; arrivalPending=false; autoDoor.reset(); }
-                if (autoDoor.tick(!doorsClosed(),doorwayOccupied())) { entityData.set(CLOSED,true); manualClosed=true; }
-                speed=0; return;
-            }
-            if (!doorsClosed()) {
-                if (doorwayOccupied()) return;
-                entityData.set(CLOSED,true); doorTicks=10;
-            }
+            entityData.set(DIRECTION,Double.compare(target,getY()));
             if (doorTicks>0) { doorTicks--; return; }
             speed=Motion.approachSpeed(speed,target-getY(),ElevatorSpeed.perTick(configuredSpeed));
             nextY=Motion.step(getY(),target,Math.max(0.001,Math.abs(speed)));
@@ -238,7 +253,7 @@ public final class ElevatorPlatformEntity extends Entity {
         setPos(nextX,nextY,nextZ);
     }
     @Override public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps) { lerpX=x; lerpY=y; lerpZ=z; lerpSteps=Math.max(1,steps); }
-    @Override protected void addAdditionalSaveData(CompoundTag tag) { tag.putLong("Controller",controller.asLong()); tag.putInt("Height",height); tag.putBoolean("Up",isGoingUp()); tag.putInt("TargetOffset",targetOffset()); tag.putInt("Facing",entityData.get(FACING)); tag.putIntArray("CabinSize",new int[]{cabinSpec().width(),cabinSpec().length(),cabinSpec().cabinHeight()});tag.putIntArray("FloorLabels",floorLabels);tag.putInt("SpeedHundredths",configuredSpeed);
+    @Override protected void addAdditionalSaveData(CompoundTag tag) { tag.putLong("Controller",controller.asLong()); tag.putInt("Height",height); tag.putBoolean("Up",isGoingUp()); tag.putInt("TargetOffset",targetOffset()); tag.putInt("Facing",entityData.get(FACING)); tag.putIntArray("CabinSize",new int[]{cabinSpec().width(),cabinSpec().length(),cabinSpec().cabinHeight()});tag.putIntArray("FloorLabels",floorLabels);tag.putInt("SpeedHundredths",configuredSpeed);tag.putIntArray("StopQueue",requests.snapshot());tag.putInt("ServiceDirection",serviceDirection);tag.putBoolean("TripActive",arrivalPending);tag.putBoolean("DoorsClosed",doorsClosed());
         net.minecraft.nbt.ListTag riders=new net.minecraft.nbt.ListTag();
         java.util.Set<java.util.UUID> ids=new java.util.HashSet<>(riderOffsets.keySet()); ids.addAll(savedRiders);
         for (java.util.UUID id:ids) riders.add(net.minecraft.nbt.StringTag.valueOf(id.toString()));
@@ -269,6 +284,11 @@ public final class ElevatorPlatformEntity extends Entity {
                 riderOffsets.put(item.getUUID("Player"),new Vec3(x,0,z));
         }
         savedRiders.addAll(riderOffsets.keySet());
-        waitingForRiders=!savedRiders.isEmpty(); loadGrace=40; speed=0; arrivalPending=Math.abs(controller.getY()+1+targetOffset()-getY())>1e-4; autoDoor.reset(); entityData.set(CLOSED,arrivalPending);
+        waitingForRiders=!savedRiders.isEmpty(); loadGrace=40; speed=0; arrivalPending=Math.abs(controller.getY()+1+targetOffset()-getY())>1e-4; autoDoor.reset();
+        serviceDirection=net.minecraft.util.Mth.clamp(tag.getInt("ServiceDirection"),-1,1);
+        if(tag.contains("TripActive"))arrivalPending=tag.getBoolean("TripActive");
+        for(int stop:tag.getIntArray("StopQueue"))if(stop>=0&&stop<=height)requests.add(stop);
+        if(arrivalPending)requests.add(targetOffset());
+        entityData.set(CLOSED,arrivalPending || tag.getBoolean("DoorsClosed"));
     }
 }
