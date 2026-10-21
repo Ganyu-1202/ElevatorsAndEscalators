@@ -11,6 +11,11 @@ import org.firefly.elevators_escalators.ModContent;
 import java.util.*;
 public final class EscalatorControllerBlockEntity extends BlockEntity {
  private UUID owner=UUID.randomUUID();private BlockPos end;private boolean built;private int mode=1,speed=100;private List<EscalatorPlan.Step> plan=List.of();private final Set<BlockPos> generated=new HashSet<>();
+ private int paidTreads;
+ public void refundMaterials(){
+  int amount=paidTreads;paidTreads=0;setChanged();
+  org.firefly.elevators_escalators.ConstructionMaterials.drop(level,worldPosition,ModContent.ESCALATOR_ITEM.get(),amount);
+ }
  public EscalatorControllerBlockEntity(BlockPos p,BlockState s){super(ModContent.ESC_CONTROLLER_BE.get(),p,s);}
  public UUID id(){return owner;}public boolean built(){return built;}public int mode(){return mode;}public int speed(){return speed;}public boolean hasEnd(){return end!=null;}
  public BlockPos start(){return worldPosition.above();}
@@ -35,10 +40,20 @@ public final class EscalatorControllerBlockEntity extends BlockEntity {
    }
    if(!level.getEntities((Entity)null,new AABB(pos),e->!e.isSpectator()).isEmpty()){tell(p,"踏步位置有实体，请先让开："+pos.toShortString());return;}
   }
+  int required=steps.size();
+  if(!p.getAbilities().instabuild&&org.firefly.elevators_escalators.ConstructionMaterials.count(p,ModContent.ESCALATOR_ITEM.get())<required){
+   tell(p,"踏板不足：需要 "+required+" 个（包含入口和出口平段） / Not enough treads");return;
+  }
   for(var step:steps){var pos=step.pos();
    var state=ModContent.ESCALATOR.get().defaultBlockState().setValue(EscalatorBlock.FACING,step.up()).setValue(EscalatorBlock.RISING,step.rises()).setValue(EscalatorBlock.ASSEMBLED,true);
    if(!level.setBlock(pos,state,3)||!(level.getBlockEntity(pos)instanceof EscalatorStepBlockEntity be)){if(level.getBlockState(pos).is(ModContent.ESCALATOR.get())&&level.getBlockState(pos).getValue(EscalatorBlock.ASSEMBLED))level.removeBlock(pos,false);dismantle();tell(p,"建造失败，已撤回本次踏步 / Build rolled back");return;}
    generated.add(pos);be.bind(worldPosition,owner);
+  }
+  if(!p.getAbilities().instabuild){
+   if(!org.firefly.elevators_escalators.ConstructionMaterials.take(p,ModContent.ESCALATOR_ITEM.get(),required)){
+    dismantle();tell(p,"材料扣除失败，已撤回本次建造 / Material transaction failed");return;
+   }
+   paidTreads=required;
   }
   plan=steps;speed=selectedSpeed;mode=1;built=true;registered=false;tick();sync();tell(p,"扶梯已建成，默认上行 / Escalator built, ascending");
  }
@@ -61,6 +76,6 @@ public final class EscalatorControllerBlockEntity extends BlockEntity {
   }
  }
  private static void tell(Player p,String s){p.displayClientMessage(Component.literal(s),false);}
- @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);t.putUUID("Owner",owner);if(end!=null)t.putLong("End",end.asLong());t.putBoolean("Built",built);t.putInt("Mode",mode);t.putInt("Speed",speed);t.putLongArray("Generated",generated.stream().mapToLong(BlockPos::asLong).toArray());}
- @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);if(t.hasUUID("Owner"))owner=t.getUUID("Owner");end=t.contains("End")?BlockPos.of(t.getLong("End")):null;built=t.getBoolean("Built");mode=Math.max(-1,Math.min(1,t.getInt("Mode")));speed=EscalatorPlan.validSpeed(t.getInt("Speed"))?t.getInt("Speed"):100;generated.clear();for(long p:t.getLongArray("Generated"))generated.add(BlockPos.of(p));if(end!=null&&EscalatorPlan.error(start(),end)!=null){end=null;built=false;}}
+ @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);t.putInt("PaidTreads",paidTreads);t.putUUID("Owner",owner);if(end!=null)t.putLong("End",end.asLong());t.putBoolean("Built",built);t.putInt("Mode",mode);t.putInt("Speed",speed);t.putLongArray("Generated",generated.stream().mapToLong(BlockPos::asLong).toArray());}
+ @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);paidTreads=Math.max(0,t.getInt("PaidTreads"));if(t.hasUUID("Owner"))owner=t.getUUID("Owner");end=t.contains("End")?BlockPos.of(t.getLong("End")):null;built=t.getBoolean("Built");mode=Math.max(-1,Math.min(1,t.getInt("Mode")));speed=EscalatorPlan.validSpeed(t.getInt("Speed"))?t.getInt("Speed"):100;generated.clear();for(long p:t.getLongArray("Generated"))generated.add(BlockPos.of(p));if(end!=null&&EscalatorPlan.error(start(),end)!=null){end=null;built=false;}}
 }

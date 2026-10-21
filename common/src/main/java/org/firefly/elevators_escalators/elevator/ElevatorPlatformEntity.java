@@ -67,6 +67,29 @@ public final class ElevatorPlatformEntity extends Entity {
     public ElevatorSpec cabinSpec(){return new ElevatorSpec(entityData.get(WIDTH),entityData.get(LENGTH),entityData.get(CABIN_HEIGHT),1,1,1);}
     public int[] floorLabels(){return floorLabels.clone();}
     public void applySpec(ElevatorSpec spec,int[] labels){entityData.set(WIDTH,spec.width());entityData.set(LENGTH,spec.length());entityData.set(CABIN_HEIGHT,spec.cabinHeight());configuredSpeed=spec.speedHundredths();floorLabels=labels.clone();refreshDimensions();setBoundingBox(makeBoundingBox());}
+    /** Used before server movement-packet fall settlement, not only during the cabin tick. */
+    public boolean supportsForFallReset(Entity rider,double packetDy){
+        if(isRemoved()||rider.isSpectator()||rider.isPassenger()
+                ||!Double.isFinite(packetDy)||packetDy>.1)return false;
+        AABB box=getBoundingBox();
+        if(rider.getX()<box.minX+.05||rider.getX()>box.maxX-.05
+                ||rider.getZ()<box.minZ+.05||rider.getZ()>box.maxZ-.05)return false;
+        double tolerance=DeckSupport.recoveryDepth(speed);
+        Integer trusted=fallSafeSupport.get(rider.getUUID());
+        boolean known=trusted!=null&&tickCount-trusted>=0&&tickCount-trusted<=40;
+        if(packetDy < -Math.max(.35,Math.abs(speed)*3+.15)&&!known)return false;
+        if(rider.fallDistance>1&&!known)return false;
+        double feet=rider.getY(),top=passengerSurface(feet);
+        if(known)tolerance=Math.max(tolerance,1.25);
+        if(DeckSupport.supported(feet,top,rider.getDeltaMovement().y))return true;
+        return known
+                &&rider.getDeltaMovement().y<=.2&&feet>=top-tolerance&&feet<=top+tolerance;
+    }
+    /** Select the actual floor or roof plane, never the empty cabin interior as support. */
+    private double passengerSurface(double feet){
+        double floor=deckTop(),roof=getY()+cabinSpec().cabinHeight();
+        return Math.abs(feet-roof)<Math.abs(feet-floor)?roof:floor;
+    }
     public double deckTop(){return getY()+cabinSpec().deckThickness();}
     @Override protected AABB makeBoundingBox(){
         if(entityData==null)return super.makeBoundingBox();
@@ -78,6 +101,7 @@ public final class ElevatorPlatformEntity extends Entity {
     private int height = 8;
     private double lerpX, lerpY, lerpZ;
     private int lerpSteps;
+    private final java.util.Map<java.util.UUID,Integer> fallSafeSupport=new java.util.HashMap<>();
     private final java.util.Map<java.util.UUID,Integer> recentSupport=new java.util.HashMap<>();
     private final java.util.Set<java.util.UUID> savedRiders = new java.util.HashSet<>();
     private final java.util.Map<java.util.UUID, Vec3> riderOffsets = new java.util.HashMap<>();
@@ -129,6 +153,7 @@ public final class ElevatorPlatformEntity extends Entity {
         waitingForRiders=!savedRiders.isEmpty();
     }
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { builder.define(UP, false); builder.define(TARGET,0); builder.define(CLOSED,false); builder.define(CURRENT_FLOOR,1); builder.define(DIRECTION,0); builder.define(FACING,0); builder.define(WIDTH,3); builder.define(LENGTH,3); builder.define(CABIN_HEIGHT,4); }
+    @Override public boolean hurt(net.minecraft.world.damagesource.DamageSource source,float amount){return false;}
     @Override public boolean isPickable() { return true; }
     @Override public boolean canBeCollidedWith() { return !isRemoved() && !noPhysics; }
     @Override public boolean isPushable() { return false; }
@@ -177,16 +202,26 @@ public final class ElevatorPlatformEntity extends Entity {
         double nextX=getX(), nextY=getY(), nextZ=getZ();
         double estimatedStep=level().isClientSide && lerpSteps>0?(lerpY-getY())/lerpSteps:speed;
         double depth=DeckSupport.recoveryDepth(estimatedStep);
-        var occupants=level().getEntities(this,oldBox.inflate(0,depth,0),e -> {
+        var occupants=level().getEntities(this,oldBox.expandTowards(0,cabinSpec().cabinHeight(),0).inflate(0,Math.max(depth,1.25),0),e -> {
             if(!(e instanceof LivingEntity)||e.isSpectator()||e.isPassenger())return false;
             // AABB overlap alone is not enough: exclude anyone walking off the deck.
             if(e.getX()<oldBox.minX+.05||e.getX()>oldBox.maxX-.05||e.getZ()<oldBox.minZ+.05||e.getZ()>oldBox.maxZ-.05)return false;
-            boolean grounded=DeckSupport.supported(e.getY(),oldBox.maxY,e.getDeltaMovement().y);
+            double surface=passengerSurface(e.getY());
+            Integer trusted=fallSafeSupport.get(e.getUUID());
+            boolean known=trusted!=null&&tickCount-trusted>=0&&tickCount-trusted<=40;
+            boolean settling=known&&Math.abs(e.getY()-surface)<=1.25&&e.getDeltaMovement().y<=.08;
+            boolean grounded=DeckSupport.supported(e.getY(),surface,e.getDeltaMovement().y);
             Integer last=recentSupport.get(e.getUUID());
-            boolean retained=last!=null && DeckSupport.retained(e.getY(),oldBox.maxY,e.getDeltaMovement().y,estimatedStep,tickCount-last);
+            boolean retained=last!=null && DeckSupport.retained(e.getY(),surface,e.getDeltaMovement().y,estimatedStep,tickCount-last);
             if(grounded) recentSupport.put(e.getUUID(),tickCount);
+            if((grounded||retained||settling)&&(e.fallDistance<=1||known)){
+                fallSafeSupport.put(e.getUUID(),tickCount);
+                // Also clear server-side player state, although only clients carry players.
+                e.fallDistance=0;
+            }
             return grounded||retained;
         });
+        fallSafeSupport.entrySet().removeIf(entry -> tickCount-entry.getValue()>40);
         recentSupport.keySet().removeIf(id -> occupants.stream().noneMatch(e -> e.getUUID().equals(id)));
         if (level().isClientSide) {
             if (lerpSteps > 0) {
@@ -253,7 +288,8 @@ public final class ElevatorPlatformEntity extends Entity {
                 if (occupant instanceof Player player) {
                     if (!level().isClientSide || !player.isLocalPlayer()) continue;
                 } else if (level().isClientSide) continue;
-                double amount=DeckSupport.retainedCarry(occupant.getY(),oldBox.maxY,oldBox.maxY+dy);
+                double surface=passengerSurface(occupant.getY());
+                double amount=DeckSupport.retainedCarry(occupant.getY(),surface,surface+dy);
                 boolean previous=noPhysics; noPhysics=true;
                 try { occupant.move(MoverType.SELF,new Vec3(0,amount,0)); }
                 finally { noPhysics=previous; }

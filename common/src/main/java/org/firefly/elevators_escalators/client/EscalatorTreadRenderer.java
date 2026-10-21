@@ -13,7 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.firefly.elevators_escalators.escalator.*;
 
 /** Continuous belt geometry: no per-slice block model dispatch or internal cube faces. */
-public final class EscalatorTreadRenderer implements BlockEntityRenderer<EscalatorStepBlockEntity> {
+public class EscalatorTreadRenderer implements BlockEntityRenderer<EscalatorStepBlockEntity> {
     private static final ResourceLocation METAL = ResourceLocation.fromNamespaceAndPath("elevators_escalators","textures/block/escalator_metal.png");
     // Lightmap-only shading: no camera-relative entity diffuse light on the belt.
     private static final RenderType BELT = RenderType.create("escalator_belt",DefaultVertexFormat.NEW_ENTITY,VertexFormat.Mode.QUADS,1536,

@@ -3,7 +3,9 @@
   "package": "org.firefly.elevators_escalators.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "CabinCollisionMixin"
+    "CabinCollisionMixin",
+    "EscalatorFallMixin",
+    "ElevatorFallDamageMixin"
   ],
   "injectors": {
     "defaultRequire": 1

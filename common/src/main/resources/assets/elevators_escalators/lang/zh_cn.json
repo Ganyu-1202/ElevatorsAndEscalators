@@ -22,7 +22,6 @@
   "message.elevators_escalators.floor_selected": "已选择高度 +%s；对空气普通右键运行。",
   "message.elevators_escalators.bound_multi": "已绑定。右键打开选层窗口；潜行右键参考方块登记楼层。",
   "message.elevators_escalators.floor_list": "可用楼层（高度偏移）：%s",
-  "block.elevators_escalators.shaft_frame": "电梯井道框架",
   "screen.elevators_escalators.title": "电梯控制",
   "screen.elevators_escalators.open": "开门",
   "screen.elevators_escalators.close": "关门",

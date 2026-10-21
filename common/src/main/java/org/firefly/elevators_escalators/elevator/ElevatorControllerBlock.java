@@ -21,7 +21,7 @@ public final class ElevatorControllerBlock extends BaseEntityBlock {
     @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new ElevatorControllerBlockEntity(pos, state); }
     @Override protected net.minecraft.world.ItemInteractionResult useItemOn(net.minecraft.world.item.ItemStack stack,BlockState state,Level level,BlockPos pos,Player player,net.minecraft.world.InteractionHand hand,BlockHitResult hit) {
-        if (stack.getItem() instanceof CabinBlockItem || stack.getItem() instanceof ShaftFrameItem || stack.getItem() instanceof ElevatorRemoteItem)
+        if (stack.getItem() instanceof CabinBlockItem || stack.getItem() instanceof ElevatorRemoteItem)
             return net.minecraft.world.ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
@@ -34,6 +34,12 @@ public final class ElevatorControllerBlock extends BaseEntityBlock {
             }
 
         }
+    }
+    @Override public BlockState playerWillDestroy(Level level,BlockPos pos,BlockState state,Player player){
+        // Called after the platform break event but before onRemove destroys the block entity.
+        if(!level.isClientSide&&!player.getAbilities().instabuild&&player.hasCorrectToolForDrops(state)
+                &&level.getBlockEntity(pos) instanceof ElevatorControllerBlockEntity controller)controller.refundMaterials();
+        return super.playerWillDestroy(level,pos,state,player);
     }
     @Override protected void onRemove(BlockState state,Level level,BlockPos pos,BlockState next,boolean moving) {
         if(!state.is(next.getBlock()) && !level.isClientSide && level.getBlockEntity(pos) instanceof ElevatorControllerBlockEntity controller) controller.removeCabin();

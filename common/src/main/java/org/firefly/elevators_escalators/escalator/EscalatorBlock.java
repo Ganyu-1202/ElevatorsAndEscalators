@@ -25,6 +25,9 @@ public final class EscalatorBlock extends Block implements net.minecraft.world.l
     }
     public static final BooleanProperty REVERSED=BooleanProperty.create("reversed");
     public EscalatorBlock(Properties properties) { super(properties); registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(REVERSED,false).setValue(ASSEMBLED,false).setValue(RISING,true)); }
+    @Override protected float getDestroyProgress(BlockState state,Player player,BlockGetter level,BlockPos pos){
+        return state.getValue(ASSEMBLED)?0:super.getDestroyProgress(state,player,level,pos);
+    }
     @Override protected MapCodec<? extends Block> codec() { return CODEC; }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> builder) { builder.add(FACING,REVERSED,ASSEMBLED,RISING); }
     @Override public BlockState getStateForPlacement(BlockPlaceContext ctx) { return defaultBlockState().setValue(FACING,ctx.getHorizontalDirection()); }
@@ -52,15 +55,7 @@ public final class EscalatorBlock extends Block implements net.minecraft.world.l
             }
             return ramp;
         }
-        VoxelShape base=Block.box(0,0,0,16,8,16);
-        if(!rising)return base;
-        VoxelShape upper=switch(facing) {
-            case NORTH -> Block.box(0,8,0,16,16,8);
-            case SOUTH -> Block.box(0,8,8,16,16,16);
-            case WEST -> Block.box(0,8,0,8,16,16);
-            default -> Block.box(8,8,0,16,16,16);
-        };
-        return Shapes.or(base,upper);
+        return Block.box(0,0,0,16,2,16);
     }
     @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (player.isSpectator()) return InteractionResult.PASS;

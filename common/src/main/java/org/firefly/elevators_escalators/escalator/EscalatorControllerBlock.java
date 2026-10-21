@@ -17,5 +17,11 @@ public final class EscalatorControllerBlock extends BaseEntityBlock {
  @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level l,BlockState s,BlockEntityType<T> t){return createTickerHelper(t,org.firefly.elevators_escalators.ModContent.ESC_CONTROLLER_BE.get(),(a,b,c,be)->be.tick());}
  @Override protected ItemInteractionResult useItemOn(net.minecraft.world.item.ItemStack stack,BlockState s,Level l,BlockPos p,Player player,InteractionHand h,BlockHitResult hit){return stack.getItem() instanceof EscalatorSurveyItem?ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION:ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;}
  @Override protected InteractionResult useWithoutItem(BlockState s,Level l,BlockPos p,Player player,BlockHitResult hit){if(!l.isClientSide&&l.getBlockEntity(p)instanceof EscalatorControllerBlockEntity be)EscalatorMenu.open(player,be);return InteractionResult.sidedSuccess(l.isClientSide);}
- @Override protected void onRemove(BlockState s,Level l,BlockPos p,BlockState next,boolean moving){if(!s.is(next.getBlock())&&!l.isClientSide&&l.getBlockEntity(p)instanceof EscalatorControllerBlockEntity be)be.dismantle();super.onRemove(s,l,p,next,moving);}
+ @Override public BlockState playerWillDestroy(Level level,BlockPos pos,BlockState state,Player player){
+        // Called after the platform break event but before onRemove destroys the block entity.
+        if(!level.isClientSide&&!player.getAbilities().instabuild&&player.hasCorrectToolForDrops(state)
+                &&level.getBlockEntity(pos) instanceof EscalatorControllerBlockEntity controller)controller.refundMaterials();
+        return super.playerWillDestroy(level,pos,state,player);
+    }
+    @Override protected void onRemove(BlockState s,Level l,BlockPos p,BlockState next,boolean moving){if(!s.is(next.getBlock())&&!l.isClientSide&&l.getBlockEntity(p)instanceof EscalatorControllerBlockEntity be)be.dismantle();super.onRemove(s,l,p,next,moving);}
 }

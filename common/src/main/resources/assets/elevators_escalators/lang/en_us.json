@@ -22,7 +22,6 @@
   "message.elevators_escalators.floor_selected": "Selected offset +%s; use in air to travel.",
   "message.elevators_escalators.bound_multi": "Bound. Use to open controls; sneak-use reference block to register floors.",
   "message.elevators_escalators.floor_list": "Available floor offsets: %s",
-  "block.elevators_escalators.shaft_frame": "Elevator Shaft Frame",
   "screen.elevators_escalators.title": "Elevator Control",
   "screen.elevators_escalators.open": "Open doors",
   "screen.elevators_escalators.close": "Close doors",

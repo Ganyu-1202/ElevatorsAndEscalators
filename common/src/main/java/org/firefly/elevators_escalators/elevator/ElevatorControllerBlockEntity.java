@@ -11,6 +11,12 @@ import org.firefly.elevators_escalators.ModContent;
 import java.util.*;
 public final class ElevatorControllerBlockEntity extends BlockEntity {
     private UUID platformId;
+    private boolean paidCabin;
+    public void recordCabinPayment(){paidCabin=true;setChanged();}
+    public void refundMaterials(){
+        if(!paidCabin)return;paidCabin=false;setChanged();
+        org.firefly.elevators_escalators.ConstructionMaterials.drop(level,worldPosition,ModContent.CABIN_ITEM.get(),1);
+    }
     private final java.util.Set<UUID> previewPlayers=new java.util.HashSet<>();
     private final java.util.Set<BlockPos> generatedPanels=new java.util.HashSet<>();
     private int previewTimer;
@@ -108,8 +114,8 @@ public final class ElevatorControllerBlockEntity extends BlockEntity {
     }
     public void operate(Player player){if(level.isClientSide||player.isSpectator())return;if(!configured)SetupMenu.open(player,worldPosition);else if(platform()!=null)ElevatorMenu.open(player,platform());else preview(player);}
     public static void tell(Player p,String key){p.displayClientMessage(Component.translatable("message.elevators_escalators."+key),false);}
-    @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);t.putLongArray("HallPanels",generatedPanels.stream().mapToLong(BlockPos::asLong).toArray());t.putBoolean("Configured",configured);t.putString("Facing",facing.getName());t.putIntArray("Spec",new int[]{spec.width(),spec.length(),spec.cabinHeight(),spec.minFloor(),spec.maxFloor(),spec.spacing(),spec.speedHundredths()});t.putIntArray("Floors",floors);t.putIntArray("Labels",labels);if(platformId!=null)t.putUUID("Platform",platformId);}
-    @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);platformId=t.hasUUID("Platform")?t.getUUID("Platform"):null;generatedPanels.clear();for(long pos:t.getLongArray("HallPanels"))generatedPanels.add(BlockPos.of(pos));Direction d=Direction.byName(t.getString("Facing"));facing=d!=null&&d.getAxis()!=Direction.Axis.Y?d:Direction.SOUTH;
+    @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);t.putBoolean("PaidCabin",paidCabin);t.putLongArray("HallPanels",generatedPanels.stream().mapToLong(BlockPos::asLong).toArray());t.putBoolean("Configured",configured);t.putString("Facing",facing.getName());t.putIntArray("Spec",new int[]{spec.width(),spec.length(),spec.cabinHeight(),spec.minFloor(),spec.maxFloor(),spec.spacing(),spec.speedHundredths()});t.putIntArray("Floors",floors);t.putIntArray("Labels",labels);if(platformId!=null)t.putUUID("Platform",platformId);}
+    @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);paidCabin=t.getBoolean("PaidCabin");platformId=t.hasUUID("Platform")?t.getUUID("Platform"):null;generatedPanels.clear();for(long pos:t.getLongArray("HallPanels"))generatedPanels.add(BlockPos.of(pos));Direction d=Direction.byName(t.getString("Facing"));facing=d!=null&&d.getAxis()!=Direction.Axis.Y?d:Direction.SOUTH;
         int[] v=t.getIntArray("Spec");configured=t.getBoolean("Configured");if(v.length==5||v.length==6||v.length==7){var candidate=new ElevatorSpec(v[0],v[1],v[2],v[3],v[4],v.length>=6?v[5]:v[2],v.length>=7?v[6]:200);if(candidate.error(new ElevatorLimits())==null)spec=candidate;else configured=false;}
         else if(t.contains("Floors")){int[] old=t.getIntArray("Floors");if(old.length>0){configured=true;spec=new ElevatorSpec(3,3,4,1,Math.min(256,old.length),4);}}
         floors=spec.offsets();labels=spec.labels();if(v.length!=5&&v.length!=6&&v.length!=7&&t.getIntArray("Floors").length>0)floors=t.getIntArray("Floors");

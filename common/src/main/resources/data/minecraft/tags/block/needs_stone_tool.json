@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "elevators_escalators:escalator_controller",
+    "elevators_escalators:escalator"
+  ]
+}

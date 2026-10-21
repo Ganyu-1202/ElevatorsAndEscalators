@@ -13,6 +13,11 @@ public final class ElevatorsEscalators {
     public static void init() {
         org.firefly.elevators_escalators.elevator.ElevatorLimits.load();
         ModContent.init();
+        // Also cancel creative instant breaks; getDestroyProgress alone only blocks survival mining.
+        dev.architectury.event.events.common.BlockEvent.BREAK.register((level,pos,state,player,xp) ->
+            state.is(ModContent.CABIN.get())||state.is(ModContent.HALL.get())
+                ||(state.is(ModContent.ESCALATOR.get())&&state.getValue(org.firefly.elevators_escalators.escalator.EscalatorBlock.ASSEMBLED))
+                ? dev.architectury.event.EventResult.interruptFalse() : dev.architectury.event.EventResult.pass());
         dev.architectury.event.events.common.TickEvent.SERVER_LEVEL_POST.register(level ->
             org.firefly.elevators_escalators.escalator.EscalatorNetwork.get(level).tick(level));
         org.firefly.elevators_escalators.escalator.EscalatorPayload.register();

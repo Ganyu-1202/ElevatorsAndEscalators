@@ -19,6 +19,7 @@ public final class HallPanelBlock extends BaseEntityBlock {
     @Override protected void neighborChanged(BlockState state,Level level,BlockPos pos,Block block,BlockPos from,boolean moving){
         if(!level.isClientSide && !level.getBlockState(pos.relative(state.getValue(FACING).getOpposite())).isCollisionShapeFullBlock(level,pos.relative(state.getValue(FACING).getOpposite())))level.removeBlock(pos,false);
     }
+    @Override protected float getDestroyProgress(BlockState s,Player player,BlockGetter level,BlockPos pos){return 0;}
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.MODEL;}
     @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){return new HallPanelBlockEntity(p,s);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(FACING)){case SOUTH->box(4,2,0,12,14,2);case NORTH->box(4,2,14,12,14,16);case EAST->box(0,2,4,2,14,12);default->box(14,2,4,16,14,12);};}
