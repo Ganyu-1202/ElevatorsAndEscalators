@@ -66,10 +66,10 @@ public final class ElevatorControllerBlockEntity extends BlockEntity {
     public void removeCabin(){var p=platform();if(p!=null)p.discard();}
     public void operate(Player player){if(level.isClientSide||player.isSpectator())return;if(!configured)SetupMenu.open(player,worldPosition);else if(platform()!=null)ElevatorMenu.open(player,platform());else preview(player);}
     public static void tell(Player p,String key){p.displayClientMessage(Component.translatable("message.elevators_escalators."+key),false);}
-    @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);t.putBoolean("Configured",configured);t.putString("Facing",facing.getName());t.putIntArray("Spec",new int[]{spec.width(),spec.length(),spec.cabinHeight(),spec.minFloor(),spec.maxFloor()});t.putIntArray("Floors",floors);t.putIntArray("Labels",labels);if(platformId!=null)t.putUUID("Platform",platformId);}
+    @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);t.putBoolean("Configured",configured);t.putString("Facing",facing.getName());t.putIntArray("Spec",new int[]{spec.width(),spec.length(),spec.cabinHeight(),spec.minFloor(),spec.maxFloor(),spec.spacing()});t.putIntArray("Floors",floors);t.putIntArray("Labels",labels);if(platformId!=null)t.putUUID("Platform",platformId);}
     @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);platformId=t.hasUUID("Platform")?t.getUUID("Platform"):null;Direction d=Direction.byName(t.getString("Facing"));facing=d!=null&&d.getAxis()!=Direction.Axis.Y?d:Direction.SOUTH;
-        int[] v=t.getIntArray("Spec");configured=t.getBoolean("Configured");if(v.length==5){var candidate=new ElevatorSpec(v[0],v[1],v[2],v[3],v[4],v[2]);if(candidate.error(new ElevatorLimits())==null)spec=candidate;else configured=false;}
+        int[] v=t.getIntArray("Spec");configured=t.getBoolean("Configured");if(v.length==5||v.length==6){var candidate=new ElevatorSpec(v[0],v[1],v[2],v[3],v[4],v.length==6?v[5]:v[2]);if(candidate.error(new ElevatorLimits())==null)spec=candidate;else configured=false;}
         else if(t.contains("Floors")){int[] old=t.getIntArray("Floors");if(old.length>0){configured=true;spec=new ElevatorSpec(3,3,4,1,Math.min(256,old.length),4);}}
-        floors=spec.offsets();labels=spec.labels();if(v.length!=5&&t.getIntArray("Floors").length>0)floors=t.getIntArray("Floors");
+        floors=spec.offsets();labels=spec.labels();if(v.length!=5&&v.length!=6&&t.getIntArray("Floors").length>0)floors=t.getIntArray("Floors");
     }
 }

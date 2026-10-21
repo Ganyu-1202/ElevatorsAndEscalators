@@ -7,5 +7,12 @@ class ElevatorSpecTest {
     @Test void rejectsBadDimensionsAndFloorEndpoints(){for(var s:new ElevatorSpec[]{new ElevatorSpec(0,1,1,1,1,1),new ElevatorSpec(65,1,1,1,1,1),new ElevatorSpec(3,3,3,0,5,3),new ElevatorSpec(3,3,3,5,-2,3)})assertNotNull(s.error(new ElevatorLimits()));}
     @Test void countLimitIs256(){assertNull(new ElevatorSpec(3,3,3,-128,128,3).error(new ElevatorLimits()));assertNotNull(new ElevatorSpec(3,3,3,1,257,3).error(new ElevatorLimits()));}
     @Test void serverLimitsCanBeLowered(){var l=new ElevatorLimits();l.maxSize=8;l.maxFloors=10;assertNotNull(new ElevatorSpec(9,3,3,1,2,3).error(l));assertNotNull(new ElevatorSpec(3,3,3,1,11,3).error(l));}
+    @Test void customSpacingMustNotBeBelowCabinHeight(){
+        assertNull(new ElevatorSpec(3,3,4,1,3,4).error(new ElevatorLimits()));
+        var s=new ElevatorSpec(3,3,4,-1,2,7);
+        assertNull(s.error(new ElevatorLimits()));assertArrayEquals(new int[]{0,7,14},s.offsets());assertEquals(14,s.travel());
+        assertNotNull(new ElevatorSpec(3,3,4,1,3,3).error(new ElevatorLimits()));
+        assertNotNull(new ElevatorSpec(3,3,4,1,3,257).error(new ElevatorLimits()));
+    }
     @Test void floorSpacingEqualsHeightForConfiguredSpecs(){var s=new ElevatorSpec(4,5,6,-1,3,6);assertEquals(18,s.travel());assertArrayEquals(new int[]{0,6,12,18},s.offsets());}
 }

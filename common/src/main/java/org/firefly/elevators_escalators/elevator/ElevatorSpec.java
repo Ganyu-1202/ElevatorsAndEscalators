@@ -10,7 +10,7 @@ public record ElevatorSpec(int width,int length,int cabinHeight,int minFloor,int
         if(width<limits.minSize || length<limits.minSize || cabinHeight<limits.minSize || width>limits.maxSize || length>limits.maxSize || cabinHeight>limits.maxSize) return "轿厢尺寸超出服务器限制 / Cabin size out of bounds";
         if(minFloor==0 || maxFloor==0 || minFloor>maxFloor || minFloor< -32767 || maxFloor>32767) return "楼层范围不合法（不能以0层为端点，编号范围±32767） / Invalid floor labels";
         if(count()<1 || count()>limits.maxFloors) return "楼层数量超出服务器限制 / Too many floors";
-        if(spacing<1 || spacing>256) return "层间距必须为1至256格 / Invalid spacing";
+        if(spacing<cabinHeight || spacing>256) return "层间距不能小于轿厢高度，且不得超过256格 / Spacing must be >= cabin height and <= 256";
         return null;
     }
     public int[] labels() { return java.util.stream.IntStream.rangeClosed(minFloor,maxFloor).filter(i->i!=0).toArray(); }
