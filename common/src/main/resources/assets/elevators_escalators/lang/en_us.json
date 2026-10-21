@@ -35,5 +35,6 @@
   "message.elevators_escalators.shaft_obstructed": "Shaft frame obstructed at %s. Construction not started; buildings are not replaced.",
   "message.elevators_escalators.shaft_exists": "Shaft frame already complete.",
   "message.elevators_escalators.shaft_materials": "Need %s frames; inventory and offhand contain %s. Construction not started.",
-  "message.elevators_escalators.shaft_built": "Placed %s / %s shaft frames. South entrances remain open."
+  "message.elevators_escalators.shaft_built": "Placed %s / %s shaft frames. South entrances remain open.",
+  "message.elevators_escalators.auto_shaft_blocked": "Controller placement denied: shaft/frame obstructed, out of bounds or not permitted at %s."
 }

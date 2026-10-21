@@ -31,18 +31,26 @@ public final class ElevatorPlatformEntity extends Entity {
         entityData.set(CLOSED,close); manualClosed=close; return true;
     }
     private boolean doorwayOccupied() {
-        return !level().getEntities(this,new AABB(getX()-1.1,getY()+.25,getZ()+1.1,getX()+1.1,getY()+3,getZ()+1.8),e -> e instanceof LivingEntity && !e.isSpectator()).isEmpty();
+        var a=facing();
+        // Doorway spans the local front edge and just outside it; rotation keeps it consistent.
+        var door=new AABB(-1.1,.25,1.1,1.1,3,1.8);
+        var rotated=CabinGeometry.rotate(new CabinGeometry.Box(door.minX,door.minY,door.minZ,door.maxX,door.maxY,door.maxZ),a);
+        return !level().getEntities(this,new AABB(getX()+rotated.x1(),getY()+rotated.y1(),getZ()+rotated.z1(),
+            getX()+rotated.x2(),getY()+rotated.y2(),getZ()+rotated.z2()),e -> e instanceof LivingEntity && !e.isSpectator()).isEmpty();
     }
     private boolean manualClosed;
     private int doorTicks;
     public boolean doorsClosed() { return entityData.get(CLOSED); }
     public java.util.List<net.minecraft.world.phys.shapes.VoxelShape> cabinShapes() {
-        return CabinGeometry.shell(doorsClosed()).stream().map(b -> net.minecraft.world.phys.shapes.Shapes.create(
+        return CabinGeometry.shell(doorsClosed(),facing()).stream().map(b -> net.minecraft.world.phys.shapes.Shapes.create(
             new AABB(b.x1()+getX(),b.y1()+getY(),b.z1()+getZ(),b.x2()+getX(),b.y2()+getY(),b.z2()+getZ()))).toList();
     }
     @Override public AABB getBoundingBoxForCulling() { return getBoundingBox().expandTowards(0,CabinGeometry.TOP,0); }
     private static final EntityDataAccessor<Integer> TARGET = SynchedEntityData.defineId(ElevatorPlatformEntity.class,EntityDataSerializers.INT);
     public int targetOffset() { return entityData.get(TARGET); }
+    private static final EntityDataAccessor<Integer> FACING=SynchedEntityData.defineId(ElevatorPlatformEntity.class,EntityDataSerializers.INT);
+    public net.minecraft.core.Direction facing() { return CabinGeometry.facing(entityData.get(FACING)); }
+    public void setFacing(net.minecraft.core.Direction direction) { entityData.set(FACING,direction.get2DDataValue()); }
     private BlockPos controller = BlockPos.ZERO;
     private int height = 8;
     private double lerpX, lerpY, lerpZ;
@@ -54,7 +62,8 @@ public final class ElevatorPlatformEntity extends Entity {
     private double speed;
     private boolean waitingForRiders;
     public ElevatorPlatformEntity(EntityType<? extends ElevatorPlatformEntity> type, Level level) { super(type, level); setNoGravity(true); }
-    public void bind(BlockPos pos, int travel) { controller = pos.immutable(); height = travel; }
+    public void bind(BlockPos pos, int travel) { bind(pos,travel,net.minecraft.core.Direction.SOUTH); }
+    public void bind(BlockPos pos,int travel,net.minecraft.core.Direction facing) { controller=pos.immutable(); height=travel; setFacing(facing); }
     public boolean isGoingUp() { return entityData.get(UP); }
     public BlockPos controllerPos() { return controller; }
     public void awaitReturningRider(Player player) {
@@ -95,7 +104,7 @@ public final class ElevatorPlatformEntity extends Entity {
         }
         waitingForRiders=!savedRiders.isEmpty();
     }
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { builder.define(UP, false); builder.define(TARGET,0); builder.define(CLOSED,false); builder.define(CURRENT_FLOOR,1); builder.define(DIRECTION,0); }
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { builder.define(UP, false); builder.define(TARGET,0); builder.define(CLOSED,false); builder.define(CURRENT_FLOOR,1); builder.define(DIRECTION,0); builder.define(FACING,0); }
     @Override public boolean isPickable() { return true; }
     @Override public boolean canBeCollidedWith() { return !isRemoved() && !noPhysics; }
     @Override public boolean isPushable() { return false; }
@@ -148,6 +157,7 @@ public final class ElevatorPlatformEntity extends Entity {
         } else {
             if (!level().hasChunkAt(controller)) return;
             if (!(level().getBlockEntity(controller) instanceof ElevatorControllerBlockEntity be) || !be.owns(getUUID())) { discard(); return; }
+            if (be.facing()!=facing()) setFacing(be.facing());
             if (loadGrace > 0) { loadGrace--; return; }
             if (waitingForRiders) {
                 restoreRiders();
@@ -200,7 +210,7 @@ public final class ElevatorPlatformEntity extends Entity {
         setPos(nextX,nextY,nextZ);
     }
     @Override public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps) { lerpX=x; lerpY=y; lerpZ=z; lerpSteps=Math.max(1,steps); }
-    @Override protected void addAdditionalSaveData(CompoundTag tag) { tag.putLong("Controller",controller.asLong()); tag.putInt("Height",height); tag.putBoolean("Up",isGoingUp()); tag.putInt("TargetOffset",targetOffset());
+    @Override protected void addAdditionalSaveData(CompoundTag tag) { tag.putLong("Controller",controller.asLong()); tag.putInt("Height",height); tag.putBoolean("Up",isGoingUp()); tag.putInt("TargetOffset",targetOffset()); tag.putInt("Facing",entityData.get(FACING));
         net.minecraft.nbt.ListTag riders=new net.minecraft.nbt.ListTag();
         java.util.Set<java.util.UUID> ids=new java.util.HashSet<>(riderOffsets.keySet()); ids.addAll(savedRiders);
         for (java.util.UUID id:ids) riders.add(net.minecraft.nbt.StringTag.valueOf(id.toString()));
@@ -213,6 +223,7 @@ public final class ElevatorPlatformEntity extends Entity {
         tag.put("RiderOffsets",offsets);
     }
     @Override protected void readAdditionalSaveData(CompoundTag tag) { controller=BlockPos.of(tag.getLong("Controller")); int h=tag.getInt("Height"); height=Motion.validHeight(h)?h:8; entityData.set(UP,tag.getBoolean("Up")); entityData.set(TARGET,tag.contains("TargetOffset")?net.minecraft.util.Mth.clamp(tag.getInt("TargetOffset"),0,height):(isGoingUp()?height:0));
+        entityData.set(FACING,tag.contains("Facing")?Math.floorMod(tag.getInt("Facing"),4):0);
         savedRiders.clear();
         for (net.minecraft.nbt.Tag rider:tag.getList("Riders",8)) {
             try { savedRiders.add(java.util.UUID.fromString(rider.getAsString())); }

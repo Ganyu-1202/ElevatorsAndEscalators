@@ -27,8 +27,9 @@ public final class ModContent {
     public static final RegistrySupplier<BlockItem> FRAME_ITEM = ITEMS.register("shaft_frame", () -> new ShaftFrameItem(FRAME.get(),new Item.Properties()));
     public static final RegistrySupplier<EscalatorBlock> ESCALATOR = BLOCKS.register("escalator", () -> new EscalatorBlock(BlockBehaviour.Properties.of().strength(3.5F).requiresCorrectToolForDrops()));
     public static final RegistrySupplier<BlockEntityType<ElevatorControllerBlockEntity>> CONTROLLER_BE = BLOCK_ENTITIES.register("elevator_controller", () -> BlockEntityType.Builder.of(ElevatorControllerBlockEntity::new, CONTROLLER.get()).build(null));
+    public static final RegistrySupplier<BlockEntityType<ShaftFrameBlockEntity>> FRAME_BE=BLOCK_ENTITIES.register("shaft_frame",() -> BlockEntityType.Builder.of(ShaftFrameBlockEntity::new,FRAME.get()).build(null));
     public static final RegistrySupplier<EntityType<ElevatorPlatformEntity>> PLATFORM = ENTITIES.register("elevator_platform", () -> EntityType.Builder.<ElevatorPlatformEntity>of(ElevatorPlatformEntity::new, MobCategory.MISC).sized(3F, 0.25F).clientTrackingRange(10).updateInterval(1).fireImmune().build(ID + ":elevator_platform"));
-    public static final RegistrySupplier<BlockItem> CONTROLLER_ITEM = ITEMS.register("elevator_controller", () -> new BlockItem(CONTROLLER.get(), new Item.Properties()));
+    public static final RegistrySupplier<BlockItem> CONTROLLER_ITEM = ITEMS.register("elevator_controller", () -> new ElevatorControllerItem(CONTROLLER.get(), new Item.Properties()));
     public static final RegistrySupplier<BlockItem> ESCALATOR_ITEM = ITEMS.register("escalator", () -> new BlockItem(ESCALATOR.get(), new Item.Properties()));
     public static final RegistrySupplier<Item> REMOTE = ITEMS.register("elevator_remote", () -> new ElevatorRemoteItem(new Item.Properties().stacksTo(1)));
     public static final RegistrySupplier<CreativeModeTab> TAB = TABS.register("transport", () -> CreativeTabRegistry.create(b -> b.title(Component.translatable("itemGroup.elevators_escalators")).icon(() -> new ItemStack(CONTROLLER_ITEM.get())).displayItems((parameters, output) -> {

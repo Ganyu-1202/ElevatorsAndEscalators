@@ -15,6 +15,14 @@ import java.util.UUID;
 
 public final class ElevatorControllerBlockEntity extends BlockEntity {
     private UUID platformId;
+    private net.minecraft.core.Direction facing=net.minecraft.core.Direction.SOUTH;
+    public net.minecraft.core.Direction facing() { return facing; }
+    public void setFacing(net.minecraft.core.Direction direction) { facing=direction; var p=platform(); if(p!=null) p.setFacing(direction); setChanged(); }
+    private UUID shaftOwner=UUID.randomUUID();
+    private java.util.Set<BlockPos> shaftCells=new java.util.HashSet<>();
+    public UUID shaftOwner() { return shaftOwner; }
+    public java.util.Set<BlockPos> shaftCells() { return java.util.Set.copyOf(shaftCells); }
+    public void setShaftCells(java.util.Set<BlockPos> cells) { shaftCells=new java.util.HashSet<>(cells); setChanged(); }
     private int height = 8;
     private int[] floors = FloorPlan.defaults(8);
     public int[] floors() { return floors.clone(); }
@@ -22,8 +30,13 @@ public final class ElevatorControllerBlockEntity extends BlockEntity {
         if (!(level instanceof ServerLevel server) || platformId==null) return null;
         return server.getEntity(platformId) instanceof ElevatorPlatformEntity entity ? entity : null;
     }
+    public void syncFacingToPlatform() {
+        var entity=platform(); if(entity!=null) entity.setFacing(facing);
+    }
     public boolean addFloor(int offset,Player player) {
-        try { floors=FloorPlan.add(floors,offset,height); setChanged();
+        try { int[] updated=FloorPlan.add(floors,offset,height);
+            if(!shaftCells.isEmpty() && !AutomaticShaft.rebuild(this,height,updated)) { tell(player,"blocked"); return false; }
+            floors=updated; setChanged();
             org.firefly.elevators_escalators.ElevatorsEscalators.LOGGER.info("Elevator {} floor table {}",worldPosition,java.util.Arrays.toString(floors));
             player.displayClientMessage(Component.translatable("message.elevators_escalators.floor_added",offset,floors.length),true); return true;
         } catch (IllegalArgumentException ex) { tell(player,"floor_invalid"); return false; }
@@ -36,7 +49,9 @@ public final class ElevatorControllerBlockEntity extends BlockEntity {
         Entity existing = platformId == null ? null : server.getEntity(platformId);
         if (player.isShiftKeyDown()) {
             if (platformId != null) { tell(player, "height_locked"); return; }
-            height = Motion.nextHeight(height); floors=FloorPlan.defaults(height); setChanged();
+            int newHeight=Motion.nextHeight(height); int[] newFloors=FloorPlan.defaults(newHeight);
+            if(!AutomaticShaft.rebuild(this,newHeight,newFloors)) { tell(player,"blocked"); return; }
+            height=newHeight; floors=newFloors; setChanged();
             player.displayClientMessage(Component.translatable("message.elevators_escalators.height", height), true); return;
         }
         if (platformId != null) {
@@ -49,7 +64,7 @@ public final class ElevatorControllerBlockEntity extends BlockEntity {
         if (y + height + 2.25 >= server.getMaxBuildHeight() || !ElevatorPlatformEntity.clear(server, space)) { tell(player, "blocked"); return; }
         // No conversion of world blocks: a dedicated persistent entity owns the platform.
         ElevatorPlatformEntity platform = new ElevatorPlatformEntity(ModContent.PLATFORM.get(), server);
-        platform.bind(worldPosition, height);
+        platform.bind(worldPosition, height, facing);
         platform.setPos(worldPosition.getX()+0.5, y, worldPosition.getZ()+0.5);
         platformId = platform.getUUID();
         if (!server.addFreshEntity(platform)) platformId = null;
@@ -73,9 +88,15 @@ public final class ElevatorControllerBlockEntity extends BlockEntity {
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries); tag.putInt("Height", height); tag.putIntArray("Floors",floors);
         if (platformId != null) tag.putUUID("Platform", platformId);
+        tag.putUUID("ShaftOwner",shaftOwner); tag.putString("Facing",facing.getName());
+        tag.putLongArray("ShaftCells",shaftCells.stream().mapToLong(BlockPos::asLong).toArray());
     }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries); int saved = tag.getInt("Height"); height = Motion.validHeight(saved) ? saved : 8; floors=FloorPlan.load(tag.getIntArray("Floors"),height);
         platformId = tag.hasUUID("Platform") ? tag.getUUID("Platform") : null;
+        if(tag.hasUUID("ShaftOwner")) shaftOwner=tag.getUUID("ShaftOwner");
+        facing=net.minecraft.core.Direction.byName(tag.getString("Facing"));
+        if(facing==null || facing.getAxis()==net.minecraft.core.Direction.Axis.Y) facing=net.minecraft.core.Direction.SOUTH;
+        shaftCells.clear(); for(long value:tag.getLongArray("ShaftCells")) shaftCells.add(BlockPos.of(value));
     }
 }
