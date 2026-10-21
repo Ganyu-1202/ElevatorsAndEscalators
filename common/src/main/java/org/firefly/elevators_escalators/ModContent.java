@@ -33,7 +33,10 @@ public final class ModContent {
     public static final RegistrySupplier<BlockItem> ESCALATOR_ITEM = ITEMS.register("escalator", () -> new BlockItem(ESCALATOR.get(), new Item.Properties()));
     public static final RegistrySupplier<Item> REMOTE = ITEMS.register("elevator_remote", () -> new ElevatorRemoteItem(new Item.Properties().stacksTo(1)));
     public static final RegistrySupplier<CreativeModeTab> TAB = TABS.register("transport", () -> CreativeTabRegistry.create(b -> b.title(Component.translatable("itemGroup.elevators_escalators")).icon(() -> new ItemStack(CONTROLLER_ITEM.get())).displayItems((parameters, output) -> {
-        output.accept(CONTROLLER_ITEM.get()); output.accept(REMOTE.get()); output.accept(ESCALATOR_ITEM.get()); output.accept(FRAME_ITEM.get());
+        output.accept(CONTROLLER_ITEM.get());
+        output.accept(FRAME_ITEM.get());
+        output.accept(ESCALATOR_ITEM.get());
+        output.accept(REMOTE.get());
     })));
     public static void init() { BLOCKS.register(); ITEMS.register(); BLOCK_ENTITIES.register(); ENTITIES.register(); MENUS.register(); TABS.register(); }
     private ModContent() {}
