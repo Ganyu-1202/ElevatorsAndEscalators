@@ -12,6 +12,8 @@ import java.util.*;
 public final class EscalatorControllerBlockEntity extends BlockEntity {
  private UUID owner=UUID.randomUUID();private BlockPos end;private boolean built;private int mode=1,speed=100;private double actualSpeed;private List<EscalatorPlan.Step> plan=List.of();private final Set<BlockPos> generated=new HashSet<>();
  public EscalatorControllerBlockEntity(BlockPos p,BlockState s){super(ModContent.ESC_CONTROLLER_BE.get(),p,s);}
+ private double beltDistance;
+ public double animationDistance(float partial){return beltDistance+(mode==0?0:actualSpeed*partial);}
  public UUID id(){return owner;}public boolean built(){return built;}public int mode(){return mode;}public int speed(){return speed;}public boolean hasEnd(){return end!=null;}
  public BlockPos start(){return worldPosition.above();}
  public boolean setEnd(Player p,BlockPos pos){if(built){tell(p,"已建造；更改端点请重新放置控制器 / Already built");return false;}String err=EscalatorPlan.error(start(),pos);if(err!=null){tell(p,err);return false;}end=pos.immutable();speed=EscalatorPlan.recommendedSpeed(start(),end);setChanged();return true;}
@@ -23,7 +25,7 @@ public final class EscalatorControllerBlockEntity extends BlockEntity {
  }
  private void build(Player p,int selectedSpeed){
   if(built||end==null)return;
-  List<EscalatorPlan.Step> steps=EscalatorPlan.build(start(),end);
+  List<EscalatorPlan.Step> steps=EscalatorPlan.withEntrance(start(),end);
   Set<BlockPos> pathCells=new HashSet<>();for(var step:steps)pathCells.add(step.pos());
   for(var step:steps){var pos=step.pos();
    for(int y=0;y<=3;y++){var check=pos.above(y);if(level.isOutsideBuildHeight(check)||!level.getWorldBorder().isWithinBounds(check)||!level.hasChunkAt(check)||!level.mayInteract(p,check)||!p.mayUseItemAt(check,Direction.UP,p.getMainHandItem())){tell(p,"路径越界、区块未加载或无权限："+check.toShortString());return;}
@@ -46,7 +48,11 @@ public final class EscalatorControllerBlockEntity extends BlockEntity {
  @Override public CompoundTag getUpdateTag(HolderLookup.Provider r){return saveWithoutMetadata(r);}
  private void sync(){setChanged();level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),3);}
  public void tick(){
-  if(!built||end==null)return;if(plan.isEmpty())plan=EscalatorPlan.build(start(),end);
+  if(!built||end==null)return;if(plan.isEmpty()){
+   var entrancePlan=EscalatorPlan.withEntrance(start(),end);
+   // Old saves do not own the extra entrance cell. Never generate it implicitly on load.
+   plan=generated.contains(entrancePlan.getFirst().pos())?entrancePlan:EscalatorPlan.build(start(),end);
+  }
   // Incomplete or unloaded segments stop the entire conveyor without force loading.
   for(var step:plan)if(!level.hasChunkAt(step.pos())||!(level.getBlockEntity(step.pos())instanceof EscalatorStepBlockEntity be)||!be.owned(worldPosition,owner)){actualSpeed=0;return;}
   double target=mode*speed/2000.0;
@@ -55,36 +61,46 @@ public final class EscalatorControllerBlockEntity extends BlockEntity {
   double desired=actualSpeed*target<0?0:target;
   actualSpeed+=Math.max(-.003,Math.min(.003,desired-actualSpeed));
   if(Math.abs(actualSpeed)<1e-6)return;
+  beltDistance+=actualSpeed;
   Set<Integer> moved=new HashSet<>();
+  // Client transport only concerns the local player; do not query the world for every step.
+  List<? extends Entity> localRiders=level.isClientSide
+      ? level.players().stream().filter(Player::isLocalPlayer).toList() : List.of();
   for(int stepIndex=0;stepIndex<plan.size();stepIndex++){
    var step=plan.get(stepIndex);
-   var pos=step.pos();double top=pos.getY()+.5;
-   AABB area=new AABB(pos.getX(),pos.getY()+.4,pos.getZ(),pos.getX()+1,pos.getY()+1.4,pos.getZ()+1);
-   for(Entity e:level.getEntities((Entity)null,area,c->c instanceof LivingEntity&&!c.isSpectator()&&!c.isPassenger())){
+   var pos=step.pos();
+   AABB area=new AABB(pos.getX(),pos.getY()+.4,pos.getZ(),pos.getX()+1,pos.getY()+1.8,pos.getZ()+1);
+   for(Entity e:level.isClientSide?localRiders:level.getEntities((Entity)null,area,c->c instanceof LivingEntity&&!(c instanceof Player)&&!c.isSpectator()&&!c.isPassenger())){
+    if(!e.getBoundingBox().intersects(area)||e.isSpectator()||e.isPassenger())continue;
     if(e instanceof Player player){if(!level.isClientSide||!player.isLocalPlayer())continue;}else if(level.isClientSide)continue;
     if(e.isShiftKeyDown()||e.getDeltaMovement().y>.1)continue;
-    if(e.getY()<top-.12||e.getY()>top+.15||!moved.add(e.getId()))continue;
+    double progress=EscalatorRamp.progress(e.getX()-pos.getX(),e.getZ()-pos.getZ(),step.up());
+    double top=pos.getY()+EscalatorRamp.surface(progress,step.rises());
+    // Wide entities stand on the highest intersecting slice; allow that small footprint difference.
+    if(e.getY()<top-.12||e.getY()>top+.38||!moved.add(e.getId()))continue;
     Direction d=actualSpeed<0&&stepIndex>0?plan.get(stepIndex-1).up():step.up();double scalar=actualSpeed;
     // Centre alignment prevents accumulated drift off a one-block-wide diagonal route.
     double cx=pos.getX()+.5,cz=pos.getZ()+.5;
     double mx=d.getStepX()*scalar+(d.getAxis()==Direction.Axis.Z?Math.max(-.03,Math.min(.03,cx-e.getX())):0);
     double mz=d.getStepZ()*scalar+(d.getAxis()==Direction.Axis.X?Math.max(-.03,Math.min(.03,cz-e.getZ())):0);
     Vec3 horizontal=new Vec3(mx,0,mz);
-    if(!level.noCollision(e,e.getBoundingBox().move(horizontal))){
-     // A one-block rise needs a full-block step, not the old hard-coded half lift.
-     // Check the raised destination including horizontal travel, not just current position.
-     double rise=EscalatorTransport.liftForClearance(
-         level.noCollision(e,e.getBoundingBox().move(horizontal).move(0,.5,0)),
-         level.noCollision(e,e.getBoundingBox().move(horizontal).move(0,1,0)));
-     if(rise<=0||!level.noCollision(e,e.getBoundingBox().move(0,rise,0)))continue;
-     e.move(MoverType.SELF,new Vec3(0,rise,0));
+    var box=e.getBoundingBox();
+    double support=EscalatorRamp.supportHeight(plan,stepIndex,box.minX+mx,box.minZ+mz,box.maxX+mx,box.maxZ+mz);
+    // Include the front of the footprint even while its centre still lies on the landing.
+    double lift=Double.isFinite(support)?Math.max(0,support-e.getY())+1e-4:0;
+    if(lift>0){
+        if(!level.noCollision(e,box.move(0,lift,0)))continue;
+        e.move(MoverType.SELF,new Vec3(0,lift,0));
     }
-    e.move(MoverType.SELF,horizontal);e.fallDistance=0;
+    e.move(MoverType.SELF,horizontal);
+    // Settle onto real collision, including descent and a blocked horizontal move.
+    e.move(MoverType.SELF,new Vec3(0,-(lift+Math.abs(actualSpeed)+.04),0));
+    e.fallDistance=0;e.setOnGround(true);
     if(e.getDeltaMovement().y<0)e.setDeltaMovement(e.getDeltaMovement().multiply(1,0,1));
    }
   }
  }
  private static void tell(Player p,String s){p.displayClientMessage(Component.literal(s),false);}
- @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);t.putUUID("Owner",owner);if(end!=null)t.putLong("End",end.asLong());t.putBoolean("Built",built);t.putInt("Mode",mode);t.putInt("Speed",speed);t.putLongArray("Generated",generated.stream().mapToLong(BlockPos::asLong).toArray());}
- @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);if(t.hasUUID("Owner"))owner=t.getUUID("Owner");end=t.contains("End")?BlockPos.of(t.getLong("End")):null;built=t.getBoolean("Built");mode=Math.max(-1,Math.min(1,t.getInt("Mode")));speed=EscalatorPlan.validSpeed(t.getInt("Speed"))?t.getInt("Speed"):100;generated.clear();for(long p:t.getLongArray("Generated"))generated.add(BlockPos.of(p));if(end!=null&&EscalatorPlan.error(start(),end)!=null){end=null;built=false;}}
+ @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);t.putUUID("Owner",owner);if(end!=null)t.putLong("End",end.asLong());t.putBoolean("Built",built);t.putInt("Mode",mode);t.putInt("Speed",speed);t.putDouble("BeltDistance",beltDistance);t.putLongArray("Generated",generated.stream().mapToLong(BlockPos::asLong).toArray());}
+ @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);if(t.hasUUID("Owner"))owner=t.getUUID("Owner");end=t.contains("End")?BlockPos.of(t.getLong("End")):null;built=t.getBoolean("Built");beltDistance=t.getDouble("BeltDistance");mode=Math.max(-1,Math.min(1,t.getInt("Mode")));speed=EscalatorPlan.validSpeed(t.getInt("Speed"))?t.getInt("Speed"):100;generated.clear();for(long p:t.getLongArray("Generated"))generated.add(BlockPos.of(p));if(end!=null&&EscalatorPlan.error(start(),end)!=null){end=null;built=false;}}
 }

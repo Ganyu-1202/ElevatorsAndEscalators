@@ -27,11 +27,31 @@ public final class EscalatorBlock extends Block implements net.minecraft.world.l
     @Override public BlockState getStateForPlacement(BlockPlaceContext ctx) { return defaultBlockState().setValue(FACING,ctx.getHorizontalDirection()); }
     @Override protected BlockState rotate(BlockState state, Rotation rotation) { return state.setValue(FACING,rotation.rotate(state.getValue(FACING))); }
     @Override protected BlockState mirror(BlockState state, Mirror mirror) { return state.rotate(mirror.getRotation(state.getValue(FACING))); }
+    private static final VoxelShape[] SHAPES = new VoxelShape[16];
+    static {
+        for (Direction facing : Direction.Plane.HORIZONTAL)
+            for (int assembled=0; assembled<2; assembled++)
+                for (int rising=0; rising<2; rising++)
+                    SHAPES[facing.get2DDataValue()*4+assembled*2+rising] = createShape(facing,assembled==1,rising==1);
+    }
     @Override protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        if(state.getValue(ASSEMBLED))return Block.box(0,0,0,16,8,16);
+        return SHAPES[state.getValue(FACING).get2DDataValue()*4+(state.getValue(ASSEMBLED)?2:0)+(state.getValue(RISING)?1:0)];
+    }
+    private static VoxelShape createShape(Direction facing, boolean assembled, boolean rising) {
+        if(assembled){
+            if(!rising)return Block.box(0,0,0,16,8,16);
+            VoxelShape ramp=Shapes.empty();
+            for(int i=0;i<EscalatorRamp.SLICES;i++){
+                double from=i*16.0/EscalatorRamp.SLICES,to=(i+1)*16.0/EscalatorRamp.SLICES;
+                double top=EscalatorRamp.surface((i+1.0)/EscalatorRamp.SLICES,true)*16;
+                VoxelShape part=switch(facing){case NORTH->Block.box(0,0,16-to,16,top,16-from);case EAST->Block.box(from,0,0,to,top,16);case WEST->Block.box(16-to,0,0,16-from,top,16);default->Block.box(0,0,from,16,top,to);};
+                ramp=Shapes.or(ramp,part);
+            }
+            return ramp;
+        }
         VoxelShape base=Block.box(0,0,0,16,8,16);
-        if(!state.getValue(RISING))return base;
-        VoxelShape upper=switch(state.getValue(FACING)) {
+        if(!rising)return base;
+        VoxelShape upper=switch(facing) {
             case NORTH -> Block.box(0,8,0,16,16,8);
             case SOUTH -> Block.box(0,8,8,16,16,16);
             case WEST -> Block.box(0,8,0,8,16,16);

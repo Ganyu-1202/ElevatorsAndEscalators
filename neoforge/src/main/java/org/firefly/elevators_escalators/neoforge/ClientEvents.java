@@ -18,6 +18,7 @@ public final class ClientEvents {
     }
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(ModContent.ESC_STEP_BE.get(),org.firefly.elevators_escalators.client.EscalatorTreadRenderer::new);
         event.registerEntityRenderer(ModContent.PLATFORM.get(), ElevatorPlatformRenderer::new);
         ElevatorsEscalators.LOGGER.info("Registered elevator platform renderer (NeoForge RegisterRenderers)");
     }

@@ -36,6 +36,15 @@ public final class EscalatorPlan {
         }
         return List.copyOf(steps);
     }
+    /** Preserve selected endpoints and incline; reserve one extra cell before the lower endpoint. */
+    public static List<Step> withEntrance(BlockPos first,BlockPos second){
+        List<Step> incline=build(first,second);
+        Step low=incline.getFirst();
+        List<Step> result=new ArrayList<>(incline.size()+1);
+        result.add(new Step(low.pos().relative(low.up().getOpposite()),low.up(),false));
+        result.addAll(incline);
+        return List.copyOf(result);
+    }
     public static int recommendedSpeed(BlockPos a,BlockPos b){return Math.min(250,75+(int)Math.floor(distance(a,b)/16)*10);}
     public static boolean validSpeed(int hundredths){return hundredths>=50&&hundredths<=300;}
 }
