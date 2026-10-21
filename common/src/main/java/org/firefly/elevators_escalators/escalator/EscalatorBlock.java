@@ -20,6 +20,9 @@ public final class EscalatorBlock extends Block implements net.minecraft.world.l
     public static final BooleanProperty ASSEMBLED=BooleanProperty.create("assembled");
     public static final BooleanProperty RISING=BooleanProperty.create("rising");
     @Override public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(BlockPos p,BlockState s){return new EscalatorStepBlockEntity(p,s);}
+    @Override public <T extends net.minecraft.world.level.block.entity.BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(Level level,BlockState state,net.minecraft.world.level.block.entity.BlockEntityType<T> type){
+        return type==org.firefly.elevators_escalators.ModContent.ESC_STEP_BE.get()?(l,p,s,be)->((EscalatorStepBlockEntity)be).tick():null;
+    }
     public static final BooleanProperty REVERSED=BooleanProperty.create("reversed");
     public EscalatorBlock(Properties properties) { super(properties); registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(REVERSED,false).setValue(ASSEMBLED,false).setValue(RISING,true)); }
     @Override protected MapCodec<? extends Block> codec() { return CODEC; }

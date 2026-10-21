@@ -72,8 +72,7 @@ public final class EscalatorTreadRenderer implements BlockEntityRenderer<Escalat
     @Override public void render(EscalatorStepBlockEntity be,float partial,PoseStack pose,MultiBufferSource buffers,int light,int overlay) {
         var state=be.getBlockState();
         if(!state.getValue(EscalatorBlock.ASSEMBLED))return;
-        var controller=be.controller();
-        double distance=controller==null?0:controller.animationDistance(partial);
+        double distance=be.animationDistance(partial);
         boolean rising=state.getValue(EscalatorBlock.RISING);
         double low=EscalatorRamp.surface(0,rising), high=EscalatorRamp.surface(1,rising);
         pose.pushPose();pose.translate(.5,0,.5);
