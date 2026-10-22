@@ -1,7 +1,10 @@
 {
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
   "textures": {
-    "all": "minecraft:block/black_concrete",
-    "particle": "minecraft:block/black_concrete"
+    "top": "elevators_escalators:block/tread_plate_top",
+    "edge": "elevators_escalators:block/tread_plate_edge",
+    "particle": "elevators_escalators:block/tread_plate_top"
   },
   "elements": [
     {
@@ -16,23 +19,59 @@
         16
       ],
       "faces": {
-        "down": {
-          "texture": "#all"
-        },
         "up": {
-          "texture": "#all"
+          "texture": "#top",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#edge",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "north": {
-          "texture": "#all"
+          "texture": "#edge",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "south": {
-          "texture": "#all"
+          "texture": "#edge",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "west": {
-          "texture": "#all"
+          "texture": "#edge",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "east": {
-          "texture": "#all"
+          "texture": "#edge",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         }
       }
     }
