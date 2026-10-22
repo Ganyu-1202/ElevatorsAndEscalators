@@ -1,6 +1,12 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube",
   "textures": {
-    "all": "minecraft:block/iron_block"
+    "particle": "elevators_escalators:block/cabin_shell",
+    "down": "elevators_escalators:block/cabin_shell",
+    "up": "elevators_escalators:block/cabin_shell",
+    "north": "elevators_escalators:block/cabin_shell",
+    "south": "elevators_escalators:block/cabin_closed_front",
+    "west": "elevators_escalators:block/cabin_shell",
+    "east": "elevators_escalators:block/cabin_shell"
   }
 }

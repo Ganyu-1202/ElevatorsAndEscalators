@@ -23,10 +23,10 @@ public record FrameBlueprint(Set<BlockPos> cells, java.util.List<BlockPos> panel
         for(int offset:offsets){
             // Place on the outside of a front corner post, not inside the doorway.
             BlockPos support=switch(front){
-                case SOUTH -> new BlockPos(left,bottom+2+offset,forward);
-                case NORTH -> new BlockPos(right,bottom+2+offset,back);
-                case EAST -> new BlockPos(right,bottom+2+offset,forward);
-                default -> new BlockPos(left,bottom+2+offset,back);
+                case SOUTH -> new BlockPos(right,bottom+2+offset,forward);
+                case NORTH -> new BlockPos(left,bottom+2+offset,back);
+                case EAST -> new BlockPos(right,bottom+2+offset,back);
+                default -> new BlockPos(left,bottom+2+offset,forward);
             };
             // For very low cabins the topmost support still lies within the continuous post.
             supports.add(support);panels.add(support.relative(front));
