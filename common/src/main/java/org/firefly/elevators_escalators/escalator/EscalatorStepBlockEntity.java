@@ -50,7 +50,7 @@ public final class EscalatorStepBlockEntity extends BlockEntity {
    for(Entity e:level.isClientSide?localRiders:level.getEntities((Entity)null,area,c->c instanceof LivingEntity&&!(c instanceof Player)&&!c.isSpectator()&&!c.isPassenger())){
     if(!e.getBoundingBox().intersects(area)||e.isSpectator()||e.isPassenger())continue;
     if(e instanceof Player player){if(!level.isClientSide||!player.isLocalPlayer())continue;}else if(level.isClientSide)continue;
-    if(e.isShiftKeyDown()||e.getDeltaMovement().y>.1)continue;
+    if(e.isShiftKeyDown()||e.getDeltaMovement().y>.1||e.fallDistance>1)continue;
     double progress=EscalatorRamp.progress(e.getX()-pos.getX(),e.getZ()-pos.getZ(),step.up());
     double top=pos.getY()+EscalatorRamp.surface(progress,step.rises());
     // Wide entities stand on the highest intersecting slice; allow that small footprint difference.
@@ -70,8 +70,11 @@ public final class EscalatorStepBlockEntity extends BlockEntity {
     double support=EscalatorRamp.supportHeight(plan,stepIndex,box.minX+mx,box.minZ+mz,box.maxX+mx,box.maxZ+mz);
     // Include the front of the footprint even while its centre still lies on the landing.
     double lift=Double.isFinite(support)?Math.max(0,support-e.getY())+1e-4:0;
+    if(lift>0&&!level.noCollision(e,box.move(0,lift,0)))continue;
+    // The settling move can invoke fall damage synchronously. Reset before it,
+    // not only afterwards; actual falling entities were excluded above.
+    e.fallDistance=0;
     if(lift>0){
-        if(!level.noCollision(e,box.move(0,lift,0)))continue;
         e.move(MoverType.SELF,new Vec3(0,lift,0));
     }
     e.move(MoverType.SELF,horizontal);

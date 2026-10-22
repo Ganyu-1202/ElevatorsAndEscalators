@@ -20,11 +20,13 @@ public final class DisplayGeometry {
         double[][] bars={{.02,.24,.10,.018},{.12,.13,.018,.11},{.12,.02,.018,.11},
             {.02,0,.10,.018},{0,.02,.018,.11},{0,.13,.018,.11},{.02,.12,.10,.018}};
         String number=SegmentDisplay.floor(floor);
+        double naturalWidth=(number.length()-1)*.17+.138;
+        double scale=Math.min(1,.35/naturalWidth);
         for(int i=0;i<number.length();i++) {
             int mask=number.charAt(i)=='-'?64:SegmentDisplay.digit(number.charAt(i)-'0');
             for(int j=0;j<7;j++) if((mask&(1<<j))!=0) {
                 double[] b=bars[j];
-                result.add(segment(-.26+i*.17+b[0]+b[2]/2,2.15+b[1],b[2],b[3],Direction.SOUTH));
+                result.add(segment(-.29+(i*.17+b[0]+b[2]/2)*scale,2.15+b[1],b[2]*scale,b[3],Direction.SOUTH));
             }
         }
         result.add(segment(.12,2.15,.018,.258,Direction.SOUTH));
@@ -35,7 +37,6 @@ public final class DisplayGeometry {
             result.add(segment(.30-i*.025,y,.025,.025,Direction.SOUTH));
             result.add(segment(.30+i*.025,y,.025,.025,Direction.SOUTH));
         }
-        double factor=number.length()>2?2.0/number.length():1;
-        return result.stream().map(b->CabinGeometry.rotate(new CabinGeometry.Box(b.x1()*factor,b.y1(),b.z1(),b.x2()*factor,b.y2(),b.z2()),facing)).toList();
+        return result.stream().map(b->CabinGeometry.rotate(b,facing)).toList();
     }
 }

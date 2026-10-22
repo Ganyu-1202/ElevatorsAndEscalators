@@ -70,20 +70,32 @@ public final class ElevatorPlatformEntity extends Entity {
     /** Used before server movement-packet fall settlement, not only during the cabin tick. */
     public boolean supportsForFallReset(Entity rider,double packetDy){
         if(isRemoved()||rider.isSpectator()||rider.isPassenger()
-                ||!Double.isFinite(packetDy)||packetDy>.1)return false;
+                ||!Double.isFinite(packetDy)){
+            supportHistory.remove(rider.getUUID());
+            return false;
+        }
         AABB box=getBoundingBox();
         if(rider.getX()<box.minX+.05||rider.getX()>box.maxX-.05
-                ||rider.getZ()<box.minZ+.05||rider.getZ()>box.maxZ-.05)return false;
-        double tolerance=DeckSupport.recoveryDepth(speed);
-        Integer trusted=fallSafeSupport.get(rider.getUUID());
-        boolean known=trusted!=null&&tickCount-trusted>=0&&tickCount-trusted<=40;
-        if(packetDy < -Math.max(.35,Math.abs(speed)*3+.15)&&!known)return false;
-        if(rider.fallDistance>1&&!known)return false;
-        double feet=rider.getY(),top=passengerSurface(feet);
-        if(known)tolerance=Math.max(tolerance,1.25);
-        if(DeckSupport.supported(feet,top,rider.getDeltaMovement().y))return true;
-        return known
-                &&rider.getDeltaMovement().y<=.2&&feet>=top-tolerance&&feet<=top+tolerance;
+                ||rider.getZ()<box.minZ+.05||rider.getZ()>box.maxZ-.05){
+            supportHistory.remove(rider.getUUID());
+            return false;
+        }
+        if(packetDy < -Math.max(.35,Math.abs(speed)*3+.15)
+                &&!supportHistory.containsKey(rider.getUUID()))return false;
+        return trackFallSupport(rider);
+    }
+    private final java.util.Map<java.util.UUID,RiderSupport.Sample> supportHistory=new java.util.HashMap<>();
+    private boolean trackFallSupport(Entity rider){
+        var id=rider.getUUID();
+        var previous=supportHistory.get(id);
+        double feet=rider.getY();
+        boolean roof=previous!=null?previous.roof():Math.abs(feet-(getY()+cabinSpec().cabinHeight()))<Math.abs(feet-deckTop());
+        double surface=roof?getY()+cabinSpec().cabinHeight():deckTop();
+        boolean follows=RiderSupport.follows(previous,feet,surface,rider.getDeltaMovement().y,tickCount);
+        boolean boarding=rider.fallDistance<=1&&DeckSupport.supported(feet,surface,rider.getDeltaMovement().y);
+        if(!follows&&!boarding){supportHistory.remove(id);return false;}
+        supportHistory.put(id,new RiderSupport.Sample(feet,surface,tickCount,roof));
+        return true;
     }
     /** Select the actual floor or roof plane, never the empty cabin interior as support. */
     private double passengerSurface(double feet){
@@ -101,7 +113,6 @@ public final class ElevatorPlatformEntity extends Entity {
     private int height = 8;
     private double lerpX, lerpY, lerpZ;
     private int lerpSteps;
-    private final java.util.Map<java.util.UUID,Integer> fallSafeSupport=new java.util.HashMap<>();
     private final java.util.Map<java.util.UUID,Integer> recentSupport=new java.util.HashMap<>();
     private final java.util.Set<java.util.UUID> savedRiders = new java.util.HashSet<>();
     private final java.util.Map<java.util.UUID, Vec3> riderOffsets = new java.util.HashMap<>();
@@ -109,7 +120,7 @@ public final class ElevatorPlatformEntity extends Entity {
     private int restoredGrace;
     private double speed;
     private boolean waitingForRiders;
-    public ElevatorPlatformEntity(EntityType<? extends ElevatorPlatformEntity> type, Level level) { super(type, level); setNoGravity(true); }
+    public ElevatorPlatformEntity(EntityType<? extends ElevatorPlatformEntity> type, Level level) { super(type, level); setNoGravity(true); setInvulnerable(true); }
     public void bind(BlockPos pos, int travel) { bind(pos,travel,net.minecraft.core.Direction.SOUTH); }
     public void bind(BlockPos pos,int travel,net.minecraft.core.Direction facing) { controller=pos.immutable(); height=travel; setFacing(facing); }
     public boolean isGoingUp() { return entityData.get(UP); }
@@ -153,7 +164,10 @@ public final class ElevatorPlatformEntity extends Entity {
         waitingForRiders=!savedRiders.isEmpty();
     }
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { builder.define(UP, false); builder.define(TARGET,0); builder.define(CLOSED,false); builder.define(CURRENT_FLOOR,1); builder.define(DIRECTION,0); builder.define(FACING,0); builder.define(WIDTH,3); builder.define(LENGTH,3); builder.define(CABIN_HEIGHT,4); }
+    // Infrastructure, not a living target: reject damage even from sources that
+    // bypass the vanilla invulnerable flag. Controller removal still uses discard().
     @Override public boolean hurt(net.minecraft.world.damagesource.DamageSource source,float amount){return false;}
+    @Override public boolean isAttackable() { return false; }
     @Override public boolean isPickable() { return true; }
     @Override public boolean canBeCollidedWith() { return !isRemoved() && !noPhysics; }
     @Override public boolean isPushable() { return false; }
@@ -202,26 +216,19 @@ public final class ElevatorPlatformEntity extends Entity {
         double nextX=getX(), nextY=getY(), nextZ=getZ();
         double estimatedStep=level().isClientSide && lerpSteps>0?(lerpY-getY())/lerpSteps:speed;
         double depth=DeckSupport.recoveryDepth(estimatedStep);
-        var occupants=level().getEntities(this,oldBox.expandTowards(0,cabinSpec().cabinHeight(),0).inflate(0,Math.max(depth,1.25),0),e -> {
+        var occupants=level().getEntities(this,oldBox.expandTowards(0,cabinSpec().cabinHeight(),0).inflate(0,Math.max(depth,2.7),0),e -> {
             if(!(e instanceof LivingEntity)||e.isSpectator()||e.isPassenger())return false;
             // AABB overlap alone is not enough: exclude anyone walking off the deck.
             if(e.getX()<oldBox.minX+.05||e.getX()>oldBox.maxX-.05||e.getZ()<oldBox.minZ+.05||e.getZ()>oldBox.maxZ-.05)return false;
             double surface=passengerSurface(e.getY());
-            Integer trusted=fallSafeSupport.get(e.getUUID());
-            boolean known=trusted!=null&&tickCount-trusted>=0&&tickCount-trusted<=40;
-            boolean settling=known&&Math.abs(e.getY()-surface)<=1.25&&e.getDeltaMovement().y<=.08;
             boolean grounded=DeckSupport.supported(e.getY(),surface,e.getDeltaMovement().y);
             Integer last=recentSupport.get(e.getUUID());
             boolean retained=last!=null && DeckSupport.retained(e.getY(),surface,e.getDeltaMovement().y,estimatedStep,tickCount-last);
             if(grounded) recentSupport.put(e.getUUID(),tickCount);
-            if((grounded||retained||settling)&&(e.fallDistance<=1||known)){
-                fallSafeSupport.put(e.getUUID(),tickCount);
-                // Also clear server-side player state, although only clients carry players.
-                e.fallDistance=0;
-            }
+            if(trackFallSupport(e)) e.fallDistance=0;
             return grounded||retained;
         });
-        fallSafeSupport.entrySet().removeIf(entry -> tickCount-entry.getValue()>40);
+        supportHistory.entrySet().removeIf(entry -> tickCount-entry.getValue().tick()>6);
         recentSupport.keySet().removeIf(id -> occupants.stream().noneMatch(e -> e.getUUID().equals(id)));
         if (level().isClientSide) {
             if (lerpSteps > 0) {
@@ -314,7 +321,7 @@ public final class ElevatorPlatformEntity extends Entity {
         }
         tag.put("RiderOffsets",offsets);
     }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) { controller=BlockPos.of(tag.getLong("Controller")); int h=tag.getInt("Height"); height=Math.max(0,Math.min(65280,h)); entityData.set(UP,tag.getBoolean("Up")); entityData.set(TARGET,tag.contains("TargetOffset")?net.minecraft.util.Mth.clamp(tag.getInt("TargetOffset"),0,height):(isGoingUp()?height:0));
+    @Override protected void readAdditionalSaveData(CompoundTag tag) { setInvulnerable(true); controller=BlockPos.of(tag.getLong("Controller")); int h=tag.getInt("Height"); height=Math.max(0,Math.min(65280,h)); entityData.set(UP,tag.getBoolean("Up")); entityData.set(TARGET,tag.contains("TargetOffset")?net.minecraft.util.Mth.clamp(tag.getInt("TargetOffset"),0,height):(isGoingUp()?height:0));
         entityData.set(FACING,tag.contains("Facing")?Math.floorMod(tag.getInt("Facing"),4):0);
         int[] size=tag.getIntArray("CabinSize");
         if(size.length==3 && java.util.Arrays.stream(size).allMatch(v->v>=1&&v<=64))applySpec(new ElevatorSpec(size[0],size[1],size[2],1,1,1),tag.getIntArray("FloorLabels"));

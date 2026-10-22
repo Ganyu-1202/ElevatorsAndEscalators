@@ -35,6 +35,29 @@ class DisplayGeometryTest {
             assertEquals(.4,dx*d.getStepZ()-dz*d.getStepX(),1e-9);
         }
     }
+    @Test void negativeAndMaximumLabelsFitWithoutOverlappingFixedIndicators() {
+        for(int floor:new int[]{-256,-32767,32767,-1,0,256}) for(int direction=-1;direction<=1;direction++) {
+            var glyphs=DisplayGeometry.glyphs(floor,direction,Direction.SOUTH);
+            int indicatorCount=direction==0?3:9;
+            int numberCount=glyphs.size()-indicatorCount;
+            for(int i=0;i<numberCount;i++) {
+                var b=glyphs.get(i);
+                assertTrue(b.x1()>=-.29-1e-9);
+                assertTrue(b.x2()<=.06+1e-9);
+                assertTrue(b.x2()<.12-.018/2);
+            }
+            var reference=DisplayGeometry.glyphs(1,direction,Direction.SOUTH);
+            assertEquals(reference.subList(reference.size()-indicatorCount,reference.size()),glyphs.subList(numberCount,glyphs.size()));
+            for(var facing:Direction.Plane.HORIZONTAL) {
+                var h=DisplayGeometry.housing(facing);
+                for(var b:DisplayGeometry.glyphs(floor,direction,facing)) {
+                    assertTrue(b.x1()>=h.x1()&&b.x2()<=h.x2() || facing.getAxis()==Direction.Axis.X);
+                    assertTrue(b.y1()>=h.y1()&&b.y2()<=h.y2());
+                    if(facing.getAxis()==Direction.Axis.X)assertTrue(b.z1()>=h.z1()&&b.z2()<=h.z2());
+                }
+            }
+        }
+    }
     @Test void everyFloorAndArrowHasValidNonzeroGeometry() {
         for(int f=1;f<=16;f++) for(int direction=-1;direction<=1;direction++) for(var d:Direction.Plane.HORIZONTAL)
             for(var b:DisplayGeometry.glyphs(f,direction,d)) assertTrue(volume(b)>0);

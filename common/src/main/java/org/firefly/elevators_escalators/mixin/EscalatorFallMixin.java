@@ -9,7 +9,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayer.class)
 public abstract class EscalatorFallMixin {
-    @Inject(method="doCheckFallDamage",at=@At("HEAD"))
+    // HEAD protects landing settlement; RETURN removes this packet's artificial
+    // descent too, which vanilla can add back after the HEAD reset.
+    @Inject(method="doCheckFallDamage",at={@At("HEAD"),@At("RETURN")})
     private void elevators$resetConveyorDescent(double dx,double dy,double dz,boolean onGround,CallbackInfo ci){
         ServerPlayer player=(ServerPlayer)(Object)this;
         EscalatorFallProtection.resetSupportedFall(player,dy);
