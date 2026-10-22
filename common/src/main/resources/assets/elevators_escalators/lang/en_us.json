@@ -41,5 +41,7 @@
   "message.elevators_escalators.config_locked": "Configuration locked; replace the controller to change.",
   "block.elevators_escalators.hall_panel": "Elevator Hall Call Panel",
   "block.elevators_escalators.escalator_controller": "Escalator Start Controller",
-  "item.elevators_escalators.escalator_survey": "Escalator Endpoint Tool"
+  "item.elevators_escalators.escalator_survey": "Escalator Endpoint Tool",
+  "item.elevators_escalators.elevator_control_board": "Elevator Control Board",
+  "item.elevators_escalators.escalator_control_board": "Escalator Control Board"
 }

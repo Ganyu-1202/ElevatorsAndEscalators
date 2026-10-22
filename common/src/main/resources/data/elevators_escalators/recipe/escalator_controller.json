@@ -1,20 +1,31 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "IRI",
-    "ICI",
-    "III"
+    " R ",
+    "ZCS",
+    " G "
   ],
   "key": {
-    "I": {
-      "item": "minecraft:iron_ingot"
-    },
     "R": {
       "item": "minecraft:redstone"
     },
+    "Z": {
+      "item": "minecraft:repeater"
+    },
     "C": {
-      "item": "minecraft:copper_ingot"
-    }
+      "item": "minecraft:copper_block"
+    },
+    "S": {
+      "item": "elevators_escalators:escalator_control_board"
+    },
+    "G": [
+      {
+        "item": "minecraft:quartz"
+      },
+      {
+        "item": "minecraft:glass"
+      }
+    ]
   },
   "result": {
     "id": "elevators_escalators:escalator_controller",

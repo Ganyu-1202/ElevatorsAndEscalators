@@ -39,11 +39,15 @@ public final class ModContent {
     public static final RegistrySupplier<EntityType<ElevatorPlatformEntity>> PLATFORM = ENTITIES.register("elevator_platform", () -> EntityType.Builder.<ElevatorPlatformEntity>of(ElevatorPlatformEntity::new, MobCategory.MISC).sized(3F, 0.25F).clientTrackingRange(10).updateInterval(1).fireImmune().build(ID + ":elevator_platform"));
     public static final RegistrySupplier<BlockItem> CONTROLLER_ITEM = ITEMS.register("elevator_controller", () -> new ElevatorControllerItem(CONTROLLER.get(), new Item.Properties()));
     public static final RegistrySupplier<BlockItem> ESCALATOR_ITEM = ITEMS.register("escalator", () -> new BlockItem(ESCALATOR.get(), new Item.Properties()));
+    public static final RegistrySupplier<Item> ELEVATOR_BOARD = ITEMS.register("elevator_control_board", () -> new Item(new Item.Properties()));
+    public static final RegistrySupplier<Item> ESCALATOR_BOARD = ITEMS.register("escalator_control_board", () -> new Item(new Item.Properties()));
     public static final RegistrySupplier<Item> REMOTE = ITEMS.register("elevator_remote", () -> new ElevatorRemoteItem(new Item.Properties().stacksTo(1)));
     public static final RegistrySupplier<CreativeModeTab> TAB = TABS.register("transport", () -> CreativeTabRegistry.create(b -> b.title(Component.translatable("itemGroup.elevators_escalators")).icon(() -> new ItemStack(CONTROLLER_ITEM.get())).displayItems((parameters, output) -> {
+        output.accept(ELEVATOR_BOARD.get());
         output.accept(CONTROLLER_ITEM.get());
         output.accept(CABIN_ITEM.get());
         output.accept(ESCALATOR_ITEM.get());
+        output.accept(ESCALATOR_BOARD.get());
         output.accept(ESC_CONTROLLER_ITEM.get());
         output.accept(ESC_SURVEY.get());
         output.accept(REMOTE.get());

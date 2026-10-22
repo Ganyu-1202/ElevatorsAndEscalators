@@ -1,7 +1,7 @@
 {
   "itemGroup.elevators_escalators": "电梯与自动扶梯",
   "block.elevators_escalators.elevator_controller": "电梯控制器",
-  "block.elevators_escalators.escalator": "扶梯踏步",
+  "block.elevators_escalators.escalator": "扶梯踏板",
   "item.elevators_escalators.elevator_remote": "电梯遥控器",
   "entity.elevators_escalators.elevator_platform": "电梯平台",
   "message.elevators_escalators.height": "行程高度：%s 格（装配前潜行右键调整）",
@@ -41,5 +41,7 @@
   "message.elevators_escalators.config_locked": "配置已锁定；更改须重新放置控制器。",
   "block.elevators_escalators.hall_panel": "楼层呼梯面板",
   "block.elevators_escalators.escalator_controller": "扶梯起点控制器",
-  "item.elevators_escalators.escalator_survey": "扶梯端点设置工具"
+  "item.elevators_escalators.escalator_survey": "扶梯端点设置工具",
+  "item.elevators_escalators.elevator_control_board": "电梯控制主板",
+  "item.elevators_escalators.escalator_control_board": "扶梯控制主板"
 }
